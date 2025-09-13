@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .models import Roles
+from .serializers import RolesSerializer
 
-# Create your views here.
+class RolesViewSet(viewsets.ModelViewSet):
+    queryset = Roles.objects.all()
+    serializer_class = RolesSerializer
