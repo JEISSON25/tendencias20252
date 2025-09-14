@@ -1,0 +1,48 @@
+# Archivos de caché y compilados
+__pycache__/
+*.pyc
+*.pyo
+*~
+.ipynb_checkpoints/
+*.db
+
+# Directorios de entorno virtual
+venv/
+env/
+.env/
+
+# Archivos de la base de datos de SQLite
+db.sqlite3
+
+# Archivos de entorno y de configuración sensible
+.env
+.flaskenv
+*.env
+*.ini
+
+# Directorios de medios y archivos subidos por los usuarios
+media/
+
+# Archivos y directorios de Celery
+celerybeat.pid
+
+# Archivos de logs
+*.log
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Directorios de build y distribución
+dist/
+build/
+*.egg-info/
+
+# Archivos específicos de VS Code
+.vscode/
+
+# IDEs
+.idea/
+.project
+.classpath
+.settings/

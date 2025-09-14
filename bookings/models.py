@@ -1,0 +1,79 @@
+# bookings/models.py
+from django.db import models
+from django.conf import settings
+from datetime import timedelta
+from decimal import Decimal
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class ServiceType(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    base_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    cost_per_hour = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+class ServiceInstance(models.Model):
+    service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f'{self.name} ({self.service_type.name})'
+
+class Discount(models.Model):
+    service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
+    description = models.CharField(max_length=255)
+    discount_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(0.00), MaxValueValidator(100.00)]
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.description} ({self.discount_percentage}%)'
+
+class Booking(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    service_instance = models.ForeignKey(ServiceInstance, on_delete=models.CASCADE)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    duration_hours = models.DecimalField(max_digits=5, decimal_places=2, editable=False)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    final_cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['start_time']
+
+    def save(self, *args, **kwargs):
+
+        duration: timedelta = self.end_time - self.start_time
+        self.duration_hours = Decimal(duration.total_seconds() / 3600).quantize(Decimal('0.01'))
+
+        service_type = self.service_instance.service_type
+        base_cost = service_type.base_cost
+        cost_per_hour = service_type.cost_per_hour
+        
+        self.cost = Decimal(base_cost + (cost_per_hour * self.duration_hours)).quantize(Decimal('0.01'))
+
+        try:
+            active_discount = self.service_instance.service_type.discount_set.get(is_active=True)
+            discount_percentage = active_discount.discount_percentage / 100
+            discount_amount = self.cost * discount_percentage
+            self.discount = Decimal(discount_amount).quantize(Decimal('0.01'))
+        except Discount.DoesNotExist:
+            self.discount = Decimal('0.00')
+
+        # 4. Calcular el costo final
+        self.final_cost = (self.cost - self.discount).quantize(Decimal('0.01'))
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'Reserva de {self.service_instance.name} por {self.user.username}'

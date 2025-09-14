@@ -1,0 +1,21 @@
+{
+  "name": "Django API Project",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode",
+        "formulahendry.auto-rename-tag",
+        "dbaeumer.vscode-eslint",
+        "ms-ossdata.vscode-pgsql"
+      ]
+    }
+  },
+  "forwardPorts": [8000],
+  "remoteUser": "root",
+  "overrideCommand": false
+}
