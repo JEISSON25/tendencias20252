@@ -18,8 +18,19 @@ MARCA_MAP = {
     '34': 'TETRACOLOR'
 }
 
-def limpiar_y_preparar_detalle(path_file: str) -> pd.DataFrame:
-    data = pd.read_excel(path_file)
+def limpiar_y_preparar_detalle(data_or_path) -> pd.DataFrame:
+    """
+    Limpia y transforma los datos del Excel o DataFrame.
+    Soporta recibir un path de archivo o directamente un DataFrame.
+    """
+    # Si recibimos un DataFrame, usamos directo
+    if isinstance(data_or_path, pd.DataFrame):
+        data = data_or_path.copy()
+    else:
+        # Si es ruta de archivo → leemos Excel
+        data = pd.read_excel(data_or_path)
+    
+    
     data = data.fillna(method='ffill')
 
     # Fecha normalizada
@@ -39,12 +50,18 @@ def limpiar_y_preparar_detalle(path_file: str) -> pd.DataFrame:
     detalle = data[[
         'Fecha',
         'Movimientos de Existencias/Descripción',
-        'Movimientos de Existencias/Cantidad Real',
-        'Movimientos de Existencias/Cantidad Reservada',
         'Producto negado',
         'marca',
         'Documento Origen',
         'Referencia'
     ]].copy()
+    
+    detalle = detalle.rename(columns={
+    'Fecha': 'fecha',
+    'Movimientos de Existencias/Descripción': 'producto',
+    'Producto negado': 'cantidad_negada',
+    'Documento Origen': 'origen',
+    'Referencia': 'referencia'
+    })
 
     return detalle
