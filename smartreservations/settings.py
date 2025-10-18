@@ -28,10 +28,17 @@ SECRET_KEY = 'django-insecure-h_cel8*k$xxn-p=4=h))qhycag$69wrx(l%=17(3@1soqgi#vy
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "https://smart-reservations.azurewebsites.net",
-    "http://smart-reservations.azurewebsites.net",
+    'smart-reservations.azurewebsites.net',
 ]
 
+AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
+
+if AZURE_HOST:
+    # Azure App Service usa un subdominio .azurewebsites.net
+    ALLOWED_HOSTS.append(AZURE_HOST)
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
