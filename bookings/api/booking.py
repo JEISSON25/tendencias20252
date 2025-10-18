@@ -30,7 +30,7 @@ class BookingViewSet(CustomPermissionMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        if user.is_superuser:
+        if user.is_staff:
             return Booking.objects.all()
         
         return Booking.objects.filter(user=user)
@@ -63,7 +63,7 @@ class BookingReportViewSet(CustomPermissionMixin, viewsets.GenericViewSet):
         summary="Genera un reporte en formato PDF.",
         description="Este endpoint devuelve un reporte de los datos en formato PDF.",
     )
-    @action(detail=False, methods=['get'], url_path='pdf')
+    @action(detail=False, methods=['get'], url_path='pdf', url_name='pdf')
     def report_pdf(self, request):
         queryset = Booking.objects.all()
         return generate_pdf_report(queryset)        
@@ -72,7 +72,7 @@ class BookingReportViewSet(CustomPermissionMixin, viewsets.GenericViewSet):
         summary="Genera un reporte en formato JSON.",
         description="Este endpoint devuelve un reporte de los datos en formato JSON.",
     )
-    @action(detail=False, methods=['get'], url_path='json')
+    @action(detail=False, methods=['get'], url_path='json', url_name='json')
     def report_json(self, request):
         queryset = Booking.objects.all()
         return generate_json_report(queryset)

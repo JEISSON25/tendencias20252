@@ -9,7 +9,7 @@ class ServiceInstanceTests(BaseAPITestCase):
     
     def setUp(self):
         super().setUp()
-        self.list_url = reverse('serviceinstance-list')
+        self.list_url = reverse('service-instance-list')
         
         self.service_type = ServiceType.objects.create(
             name='Office', base_cost=Decimal('10.00'), cost_per_hour=Decimal('5.00')
