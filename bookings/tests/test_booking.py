@@ -2,7 +2,7 @@
 from datetime import timedelta
 from django.utils import timezone
 from django.urls import reverse
-from requests import Response
+from rest_framework.response import Response
 from rest_framework import status
 from decimal import Decimal
 from bookings.models import Booking, ServiceInstance, ServiceType, Discount
@@ -31,6 +31,7 @@ class BookingTests(BaseAPITestCase):
             start_time=now + timedelta(hours=1),
             end_time=now + timedelta(hours=2)
         )
+
         # Booking de otro usuario (para pruebas de queryset/permisos de objeto)
         self.admin_booking = Booking.objects.create(
             user=self.admin_user,
@@ -57,9 +58,11 @@ class BookingTests(BaseAPITestCase):
 
     def test_staff_can_list_all_bookings(self):
         self.force_authenticate(self.staff_user)
+        
         response = self.client.get(self.list_url)
+        
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Debe ver todas las reservas
+
         self.assertEqual(len(response.data), 2)
         
     def test_client_cannot_update_booking(self):
@@ -109,14 +112,20 @@ class BookingReportTests(BaseAPITestCase):
 
     def setUp(self):
         super().setUp()
-        self.pdf_url = reverse('report_pdf')
-        self.json_url = reverse('report_json')
+        self.pdf_url = reverse('booking-report-pdf')
+        self.json_url = reverse('booking-report-json')
         
         now = timezone.now()
 
         # Crear datos de prueba para los reportes
-        service_type = ServiceType.objects.create(name='T')
-        instance = ServiceInstance.objects.create(service_type=service_type, name='I')
+        service_type = ServiceType.objects.create(
+            name='Habitación', base_cost=Decimal('50.00'), cost_per_hour=Decimal('10.00')
+        )
+
+        instance = ServiceInstance.objects.create(
+            service_type=service_type, name='Habitación Individual'
+        )
+
         Booking.objects.create(
             user=self.client_user, service_instance=instance, 
             start_time=now, end_time=now + timedelta(hours=1)
@@ -134,14 +143,20 @@ class BookingReportTests(BaseAPITestCase):
         # Mock para evitar errores de renderizado/librerías externas en la prueba
         with patch(REPORTS_PDF_PATH) as mock_pdf:
             mock_pdf.return_value = Response("Mock PDF Content", status=status.HTTP_200_OK)
+            
             response = self.client.get(self.pdf_url)
+            
             self.assertEqual(response.status_code, status.HTTP_200_OK)
+            
             mock_pdf.assert_called_once()
 
     def test_permission_staff_can_access_json_report(self):
         self.force_authenticate(self.staff_user)
         with patch(REPORTS_JSON_PATH) as mock_json:
             mock_json.return_value = Response({"data": "Mock JSON"}, status=status.HTTP_200_OK)
+            
             response = self.client.get(self.json_url)
+            
             self.assertEqual(response.status_code, status.HTTP_200_OK)
+            
             mock_json.assert_called_once()

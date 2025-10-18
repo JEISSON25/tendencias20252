@@ -10,8 +10,8 @@ class ServiceTypeTests(BaseAPITestCase):
     
     def setUp(self):
         super().setUp()
-        self.list_url = reverse('servicetype-list')
-        self.detail_url = lambda pk: reverse('servicetype-detail', args=[pk])
+        self.list_url = reverse('service-type-list')
+        self.detail_url = lambda pk: reverse('service-type-detail', args=[pk])
         
         self.service_type = ServiceType.objects.create(
             name='Sala de Reuniones',
