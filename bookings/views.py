@@ -10,10 +10,6 @@ STAFF_PERMISSIONS = [IsStaffOrManager]
 MANAGER_PERMISSIONS = [IsManager]
 
 class CustomPermissionMixin:
-    """
-    Mixin que utiliza un mapa de permisos por acción.
-    ... (El código de get_permissions() se mantiene igual)
-    """
     
     # Define un mapa por defecto si la subclase no lo implementa
     permission_required_map = {} 
