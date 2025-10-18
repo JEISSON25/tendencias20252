@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -55,6 +56,17 @@ REST_FRAMEWORK = {
     ],
 }
 
+SIMPLE_JWT = {
+    # Duración del token de ACCESO (el que usas en cada request a la API)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), 
+    
+    # Duración del token de REFRESH (el que usas para obtener un nuevo token de acceso)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    
+    # Opcional: Define la duración máxima del token si está en la blacklist
+    'BLACKLIST_AFTER_ROTATION': True, 
+}
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Sistema de Gestión de Reservas',
     'DESCRIPTION': 'Documentación de la API para un sistema de gestión de reservas multipropósito.',
@@ -92,7 +104,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'smartreservations.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -150,11 +161,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración de correo electrónico para Gmail
+# Configuración de correo electrónico para Maileroo
 
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS').lower() == 'true'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+MAILEROO_API_KEY = os.environ.get('MAILEROO_API_KEY')
+MAILEROO_FROM_EMAIL = os.environ.get('MAILEROO_FROM_EMAIL')
