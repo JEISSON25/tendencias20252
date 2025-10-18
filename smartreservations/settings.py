@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-h_cel8*k$xxn-p=4=h))qhycag$69wrx(l%=17(3@1soqgi#vy
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "https://smart-reservations.azurewebsites.net"
+    "https://smart-reservations.azurewebsites.net",
+    "http://smart-reservations.azurewebsites.net",
 ]
 
 
