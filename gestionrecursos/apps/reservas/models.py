@@ -14,11 +14,12 @@ class Reservas(models.Model):
         choices=ESTADOS_RESERVA,
         default="PENDIENTE"
     )
-    id_usuario =models.ForeignKey(
+    id =models.ForeignKey(
         "usuarios.Usuarios",
         on_delete=models.SET_NULL,
         null=True,
-        related_name="reservas"
+        related_name="reservas",
+        blank=True
     )
     id_recurso = models.ForeignKey(
         "recursos.Recursos",
@@ -30,4 +31,4 @@ class Reservas(models.Model):
     fecha_fin = models.DateTimeField("Fecha y hora de fin",null=True)
 
     def __str__(self):
-        return f"Reserva {self.id_reserva} - {self.estado_reserva} - {self.id_usuario} - {self.id_recurso} - {self.fecha_inicio} - {self.fecha_fin} "
+        return f"Reserva {self.id_reserva} - {self.estado_reserva} - {self.id} - {self.id_recurso} - {self.fecha_inicio} - {self.fecha_fin} "
