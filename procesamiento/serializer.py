@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProductoNegado
+from .models import ProductoNegado, pickingModel
 
 class ProductoNegadoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,3 +7,7 @@ class ProductoNegadoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
+class PickingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = pickingModel
+        fields = '__all__'
