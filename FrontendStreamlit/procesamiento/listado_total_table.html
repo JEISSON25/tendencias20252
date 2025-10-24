@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Listado Total</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 9pt;
+            color: #333;
+            margin: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 0.6px solid #888;
+            padding: 4px 6px;
+            vertical-align: middle;
+            overflow-wrap: break-word;
+        }
+
+        th {
+            background-color: #4a678f;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        td {
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr { page-break-inside: avoid; }
+
+        /* Distribución ajustada */
+        .col-marca { width: 9%; }
+        .col-producto { width: 44%; }
+        .col-pedidas { width: 8%; text-align: center; }
+        .col-pacas { width: 7%; text-align: center; }
+        .col-faltantes { width: 8%; text-align: center; }
+        .col-origen { width: 14%; }
+        .col-zona { width: 10%; text-align: center; }
+
+        footer {
+            position: fixed;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 8pt;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>LISTADO TOTAL DE PRODUCTOS REQUERIDOS</h2>
+
+    {{ report_table_html|safe }}
+
+    <footer>
+        <p>Reporte generado automáticamente - {{ fecha_actual }}</p>
+    </footer>
+
+</body>
+</html>
+
