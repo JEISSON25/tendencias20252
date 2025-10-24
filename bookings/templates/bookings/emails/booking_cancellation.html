@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancelación de Reserva - {{ site_name }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                    
+                    <tr>
+                        <td align="center" style="background-color: #FF9800; padding: 30px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px;">Reserva Cancelada 🚫</h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px;">Hola <strong>{{ username }}</strong>:</p>
+                            <p style="font-size: 16px;">Confirmamos que tu reserva ha sido <strong>cancelada exitosamente</strong>.</p>
+
+                            <table width="100%" border="0" cellspacing="0" cellpadding="10" style="margin: 20px 0; border: 1px solid #ddd; border-radius: 4px;">
+                                <tr>
+                                    <td style="background-color: #f9f9f9; width: 40%; font-weight: bold; color: #555;">Servicio</td>
+                                    <td style="background-color: #f9f9f9;">{{ service_instance_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 40%; font-weight: bold; color: #555;">Inicio</td>
+                                    <td>{{ start_time }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f9f9f9; width: 40%; font-weight: bold; color: #555;">Fin</td>
+                                    <td style="background-color: #f9f9f9;">{{ end_time }}</td>
+                                </tr>
+                            </table>
+
+                            <p style="font-size: 16px; margin-top: 30px;">Si la cancelación no fue intencional o deseas hacer una nueva reserva, puedes visitar nuestro sitio web o contactarnos.</p>
+                            
+                             <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin: 25px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="URL_DE_TU_SITIO" target="_blank" style="background-color: #FF9800; border: 1px solid #FF9800; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                                            Hacer Nueva Reserva
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 20px 40px; border-top: 1px solid #eee;">
+                            <p style="font-size: 14px; color: #888; margin: 0;">
+                                Saludos cordiales,<br>
+                                El equipo de <strong>{{ site_name }}</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

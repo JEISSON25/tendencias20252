@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 
@@ -26,8 +27,19 @@ SECRET_KEY = 'django-insecure-h_cel8*k$xxn-p=4=h))qhycag$69wrx(l%=17(3@1soqgi#vy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'smart-reservations.azurewebsites.net',
+    'localhost',
+]
 
+AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
+
+if AZURE_HOST:
+    # Azure App Service usa un subdominio .azurewebsites.net
+    ALLOWED_HOSTS.append(AZURE_HOST)
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -55,6 +67,17 @@ REST_FRAMEWORK = {
     ],
 }
 
+SIMPLE_JWT = {
+    # Duración del token de ACCESO (el que usas en cada request a la API)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60), 
+    
+    # Duración del token de REFRESH (el que usas para obtener un nuevo token de acceso)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    
+    # Opcional: Define la duración máxima del token si está en la blacklist
+    'BLACKLIST_AFTER_ROTATION': True, 
+}
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Sistema de Gestión de Reservas',
     'DESCRIPTION': 'Documentación de la API para un sistema de gestión de reservas multipropósito.',
@@ -66,6 +89,7 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,6 +117,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smartreservations.wsgi.application'
 
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -102,8 +131,8 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db',
-        'PORT': '5432',
+        'HOST': os.environ.get('DB_HOST', 'db'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -145,16 +174,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración de correo electrónico para Gmail
+# Configuración de correo electrónico para Maileroo
 
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS').lower() == 'true'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+MAILEROO_API_KEY = os.environ.get('MAILEROO_API_KEY')
+MAILEROO_FROM_EMAIL = os.environ.get('MAILEROO_FROM_EMAIL')

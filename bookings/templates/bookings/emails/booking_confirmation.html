@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Reserva - {{ site_name }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 20px 0;">
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
+                    
+                    <tr>
+                        <td align="center" style="background-color: #4CAF50; padding: 30px; color: #ffffff;">
+                            <h1 style="margin: 0; font-size: 28px;">¡Reserva Confirmada! 🎉</h1>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px;">Hola <strong>{{ username }}</strong>:</p>
+                            <p style="font-size: 16px;">Tu reserva ha sido procesada exitosamente. Aquí están los detalles:</p>
+
+                            <table width="100%" border="0" cellspacing="0" cellpadding="10" style="margin: 20px 0; border: 1px solid #ddd; border-radius: 4px;">
+                                <tr>
+                                    <td style="background-color: #f9f9f9; width: 40%; font-weight: bold; color: #555;">Servicio</td>
+                                    <td style="background-color: #f9f9f9;">{{ service_instance_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 40%; font-weight: bold; color: #555;">Inicio</td>
+                                    <td>{{ start_time }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #f9f9f9; width: 40%; font-weight: bold; color: #555;">Fin</td>
+                                    <td style="background-color: #f9f9f9;">{{ end_time }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 40%; font-weight: bold; color: #555; border-top: 1px solid #ddd;">Costo Final</td>
+                                    <td style="border-top: 1px solid #ddd; font-weight: bold; color: #4CAF50;">{{ final_cost }}</td>
+                                </tr>
+                            </table>
+
+                            <p style="font-size: 16px; margin-top: 30px;">¡Esperamos verte pronto! Por favor, llega a tiempo para disfrutar de tu <strong>{{ service_instance_name }}</strong>.</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 20px 40px; border-top: 1px solid #eee;">
+                            <p style="font-size: 14px; color: #888; margin: 0;">
+                                Saludos cordiales,<br>
+                                El equipo de <strong>{{ site_name }}</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

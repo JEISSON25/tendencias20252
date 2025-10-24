@@ -5,6 +5,10 @@ from datetime import timedelta
 from decimal import Decimal
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from pytz import all_timezones 
+
+TIMEZONES = tuple(zip(all_timezones, all_timezones))
+
 class ServiceType(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -77,3 +81,48 @@ class Booking(models.Model):
 
     def __str__(self):
         return f'Reserva de {self.service_instance.name} por {self.user.username}'
+
+class GlobalSettings(models.Model):
+    """
+    Modelo Singleton para almacenar la configuración global de reservas.
+    """
+    operating_start_time = models.TimeField(
+        default='09:00:00',
+        verbose_name="Hora de Apertura"
+    )
+
+    operating_end_time = models.TimeField(
+        default='18:00:00',
+        verbose_name="Hora de Cierre"
+    )
+
+    slot_duration_minutes = models.IntegerField(
+        default=30,
+        validators=[MinValueValidator(30)],
+        verbose_name="Duración del Slot (minutos)"
+    )
+
+    system_time_zone = models.CharField(
+        max_length=50,
+        choices=TIMEZONES,
+        default='America/New_York', # O cualquier TZ de tu preferencia.
+        verbose_name="Zona Horaria del Sistema"
+    )
+
+    class Meta:
+        verbose_name = "Configuración Global de Reserva"
+        verbose_name_plural = "Configuración Global de Reservas"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and GlobalSettings.objects.exists():
+            raise Exception("Solo se permite una instancia de GlobalSettings.")
+        return super(GlobalSettings, self).save(*args, **kwargs)
+        
+    @classmethod
+    def load(cls):
+        """Carga la única instancia, o crea una si no existe."""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Configuración Global del Sistema"
