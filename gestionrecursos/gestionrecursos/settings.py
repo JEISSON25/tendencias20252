@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import uuid
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -65,7 +66,7 @@ AUTH_USER_MODEL = 'usuarios.Usuarios'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,13 +97,20 @@ DATABASES = {
                'NAME': 'neondb',
                'USER': 'neondb_owner',
                'PASSWORD': 'npg_48lNhbeJKXZi',
-               'HOST': 'ep-patient-fire-ahja6094-pooler.c-3.us-east-1.aws.neon.tech',
+               'HOST': 'ep-patient-fire-ahja6094.c-3.us-east-1.aws.neon.tech',
                'PORT': '5432',
+               'TEST': {
+                    'NAME': f'test_neondb_{uuid.uuid4().hex[:6]}',
+                    'SERIALIZE': False
+                },
                'OPTIONS': {
                      'sslmode': 'require',
                 },
+                'CONN_MAX_AGE': 0,
     }
 }
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES' : (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -163,3 +171,12 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'pedidosg97@gmail.com'
+EMAIL_HOST_PASSWORD = 'szzd urgl jgki aemz'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -1,5 +1,7 @@
 from django.db import models
 from django.forms import ValidationError
+from django.core.mail import send_mail
+from django.conf import settings
 
 class Reservas(models.Model):
     id_reserva = models.AutoField(primary_key=True)
@@ -42,10 +44,11 @@ class Reservas(models.Model):
             if   self.id_user.rol.id_rol != 1:
                 raise ValidationError("Solo los administradores pueden reservar la sala de conferencias.")
     
+        # Verificar si existe alguna reserva que cruce con las fechas de esta reserva 
         Reservation_crussade = Reservas.objects.filter(
             id_recurso=self.id_recurso,
-            fecha_fin=self.fecha_inicio,
-            fecha_inicio=self.fecha_fin
+            fecha_fin=self.fecha_fin, 
+            fecha_inicio=self.fecha_inicio
         ).exclude(id_reserva=self.id_reserva)
 
         if Reservation_crussade.exists():
@@ -55,4 +58,12 @@ class Reservas(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+        print(self.id_user.email_usuario)
+        send_mail(
+            f'Cambio de estado: {self.estado_reserva}',
+            f'Hola {self.id_user.username},\nNotificacion del estado de tu reserva para: {self.id_recurso.tipo_recurso} desde {self.fecha_inicio} hasta {self.fecha_fin}.',
+            settings.DEFAULT_FROM_EMAIL,
+            [self.id_user.email_usuario],
+            fail_silently=False,
+        )
  
