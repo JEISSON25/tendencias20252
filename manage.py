@@ -2,6 +2,10 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+<<<<<<< HEAD
+=======
+   
+>>>>>>> repo2/main
 
 
 def main():

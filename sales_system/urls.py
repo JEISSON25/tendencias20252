@@ -39,7 +39,10 @@ urlpatterns = [
     path('api/', include("clients.urls")),
     path('api/', include("transactions.urls")),
     path('api/', include("auth.urls")),
+<<<<<<< HEAD
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+=======
+>>>>>>> repo2/main
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
