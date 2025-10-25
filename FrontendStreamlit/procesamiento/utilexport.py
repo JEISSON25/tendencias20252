@@ -90,7 +90,7 @@ def BultosMasivo (df_crudo: pd.DataFrame) -> pd.DataFrame:
     pickbultos = pickbultos[filtro_bultos]
     Bultos_pickingmasivo = pickbultos.groupby(
         ["codigoZona", "marca", "producto"]
-    )[["cantidad", "paca", "unidades", "origen"]].agg(
+    )[["paca", "origen"]].agg(
         Pacas=("paca", "sum"),
         Origen=("origen", lambda x: ", ".join(x.unique()))).reset_index()
     
@@ -118,7 +118,7 @@ def Regerospickingmasivo (df_crudo: pd.DataFrame) -> pd.DataFrame:
 
 
 #La respuesta de este es un diccionario con datos(Se divide por zona)
-def RegerosSeleccion(df_crudo: pd.DataFrame) -> Dict[Any, pd.DataFrame]:
+def RegerosSeleccion(df_crudo: pd.DataFrame) -> pd.DataFrame:
     if not isinstance(df_crudo, pd.DataFrame):
         raise TypeError("La función espera un objeto pd.DataFrame como entrada.")
 
@@ -132,24 +132,13 @@ def RegerosSeleccion(df_crudo: pd.DataFrame) -> Dict[Any, pd.DataFrame]:
     df_filtrado = pickregeros[filtro_r]
     
     # 2. AGRUPACIÓN Y AGREGACIÓN
-    df_agrupado = df_filtrado.groupby(
-        by=["codigoZona", "zona", "origen", "producto"]
+    df_regueros = df_filtrado.groupby(
+        by=["codigoZona", "zona", "origen", "marca","producto"]
     ).agg(
         Unidades_faltantes=("unidades", "sum")
     ).reset_index() 
-    
-    # 3. CONVERSIÓN A DICCIONARIO POR ZONA
-    
-    zones = df_agrupado["codigoZona"].unique()
-    reporte_por_zona = {}
-    
-    # Iteramos sobre cada zona para crear un DataFrame para el reporte
-    for zone in zones:
-        zone_data = df_agrupado[df_agrupado["codigoZona"] == zone].copy()
-        zone_data = zone_data.drop(columns=["codigoZona"])
-        reporte_por_zona[zone] = zone_data
         
-    return reporte_por_zona
+    return df_regueros
    
     
 

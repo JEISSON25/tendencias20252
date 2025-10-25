@@ -14,7 +14,7 @@ from io import BytesIO
 #FUNCIONES PROPIAS
 from procesamiento.utils import convert_dates_to_iso
 from procesamiento.utilexport import rutaPesodf, listadoTotal, BultosMasivo, Regerospickingmasivo, RegerosSeleccion
-from procesamiento.html.utilsformatoshtml import transformacion_pdf_listado, generate_bultos_masivo2, generate_regueros_zona
+from FrontendStreamlit.procesamiento.html.utilsformatoshtml import transformacion_pdf_listado
 #FUNCIONES DE AUTENTICACIÓN
 from auth_logic import protected_post, logout_user, DJANGO_API_BASE
 
@@ -72,7 +72,15 @@ def display_summary_report():
 
 
         with col_down: 
-    # --- 1. PREPARAR DATOS CLAVE PARA LOS PDF --- # Si el DF de resumen no está vacío, usamos la primera fila como referencia datos_clave = { "nombre_cliente": df_summary['nombreAsociado'].iloc[0] if 'nombreAsociado' in df_summary.columns else "Cliente Desconocido", "id_documento": "CARGA-" + pd.Timestamp.now().strftime("%Y%m%d%H%M"), # ID de carga único "vendedor": df_summary['vendedor'].iloc[0] if 'vendedor' in df_summary.columns else "N/A", "ciudad": df_summary['cuidad'].iloc[0] if 'cuidad' in df_summary.columns else "N/A", "codigo_zona": df_summary['codigoZona'].iloc[0] if 'codigoZona' in df_summary.columns else "N/A", "zona": df_summary['zona'].iloc[0] if 'zona' in df_summary.columns else "N/A", } # --- 3. BOTÓN DE PDF --- # Genera el PDF usando la función externa y el DataFrame de resumen pdf_data = generate_summary_pdf(df_summary, datos_clave) if pdf_data: st.download_button( label="Descargar Resumen a PDF", data=pdf_data, file_name='resumen_picking_packing.pdf', mime='application/pdf', help='Descarga el resumen del picking y packing en PDF.' ) # --- 3. BOTÓN DE RUTA ZONA PESO --- dfzonapeso = rutaPesodf(df_summary) pdfzonapeso = generate_zonapeso_pdf(dfzonapeso, datos_clave) if pdfzonapeso: st.download_button( label="Descargar Pesos por Zona a PDF", data=pdfzonapeso, file_name='resumen_zona_peso.pdf', mime='application/pdf', help='Descarga el resumen del zona peso en PDF.' )
+    # --- 1. BOTÓN DE EXCEL ---# 
+          excel_data = to_excel(df_summary) 
+          st.download_button( 
+                    label="Descargar Resumen a Excel", 
+                    data=excel_data, file_name='resumen_picking_packing.xlsx', 
+                    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                    help='Descarga el resumen del picking y packing.' 
+                    ) 
+    # --- 2. PREPARAR DATOS CLAVE PARA EL PDF --- # Si el DF de resumen no está vacío, usamos la primera fila como referencia datos_clave = { "nombre_cliente": df_summary['nombreAsociado'].iloc[0] if 'nombreAsociado' in df_summary.columns else "Cliente Desconocido", "id_documento": "CARGA-" + pd.Timestamp.now().strftime("%Y%m%d%H%M"), # ID de carga único "vendedor": df_summary['vendedor'].iloc[0] if 'vendedor' in df_summary.columns else "N/A", "ciudad": df_summary['cuidad'].iloc[0] if 'cuidad' in df_summary.columns else "N/A", "codigo_zona": df_summary['codigoZona'].iloc[0] if 'codigoZona' in df_summary.columns else "N/A", "zona": df_summary['zona'].iloc[0] if 'zona' in df_summary.columns else "N/A", } # --- 3. BOTÓN DE PDF --- # Genera el PDF usando la función externa y el DataFrame de resumen pdf_data = generate_summary_pdf(df_summary, datos_clave) if pdf_data: st.download_button( label="Descargar Resumen a PDF", data=pdf_data, file_name='resumen_picking_packing.pdf', mime='application/pdf', help='Descarga el resumen del picking y packing en PDF.' ) # --- 3. BOTÓN DE RUTA ZONA PESO --- dfzonapeso = rutaPesodf(df_summary) pdfzonapeso = generate_zonapeso_pdf(dfzonapeso, datos_clave) if pdfzonapeso: st.download_button( label="Descargar Pesos por Zona a PDF", data=pdfzonapeso, file_name='resumen_zona_peso.pdf', mime='application/pdf', help='Descarga el resumen del zona peso en PDF.' )
     # Si el DF de resumen no está vacío, usamos la primera fila como referencia
           datos_clave = { "nombre_cliente": df_summary['nombreAsociado'].iloc[0] if 
                         'nombreAsociado' in df_summary.columns else "Cliente Desconocido", 
@@ -82,39 +90,36 @@ def display_summary_report():
                         "codigo_zona": df_summary['codigoZona'].iloc[0] if 'codigoZona' in df_summary.columns else "N/A", 
                         "zona": df_summary['zona'].iloc[0] if 'zona' in df_summary.columns else "N/A"
                         }
-    # --- BOTONES DE PDF --- #
-    # --- 1. BOTÓN DE LISTADO TOTAL ---
+    # --- 3. BOTÓN DE PDF --- #
+    # Genera el PDF usando la función externa y el DataFrame de resumen
+          pdf_data = generate_summary_pdf(df_summary, datos_clave)
+          if pdf_data: st.download_button( 
+                    label="Descargar Resumen a PDF", 
+                    data=pdf_data, file_name='resumen_picking_packing.pdf', 
+                    mime='application/pdf', 
+                    help='Descarga el resumen del picking y packing en PDF.' 
+                    )
+    # --- 3. BOTÓN DE RUTA ZONA PESO ---
+          dfzonapeso = rutaPesodf(df_summary)
+          pdfzonapeso = generate_zonapeso_pdf(dfzonapeso, datos_clave)
+          if pdfzonapeso: st.download_button( 
+                     label="Descargar Pesos por Zona a PDF", 
+                     data=pdfzonapeso, 
+                     file_name='resumen_zona_peso.pdf', 
+                     mime='application/pdf', 
+                     help='Descarga el resumen del zona peso en PDF.' 
+                     )
+    # --- 4. BOTÓN DE LISTADO TOTAL ---
           dflistadototal = listadoTotal(df_summary)
           pdflistadototal = transformacion_pdf_listado(dflistadototal, datos_clave)
           if pdflistadototal: st.download_button( 
-                     label="🔽 LISTADO TOTAL PDF", 
+                     label="Descargar listado total a PDF", 
                      data=pdflistadototal, 
                      file_name='listado_total.pdf', 
                      mime='application/pdf', 
                      help='Descarga el resumen del listado total en PDF.' 
                      )
-    
-    # --- 2. BOTÓN DE RUTA BULTOS MASIVO ---
-          dfbultosmasivo= BultosMasivo(df_summary)
-          pdfbultosmasivo= generate_bultos_masivo2(dfbultosmasivo, datos_clave)
-          if pdfbultosmasivo: st.download_button( 
-                     label="🔽 BULTOS ZONA PDF", 
-                     data=pdfbultosmasivo, 
-                     file_name='resumen_bultosmasivo.pdf', 
-                     mime='application/pdf', 
-                     help='Descarga el resumen del bultos masivo en PDF.' 
-                     )
-     # --- 3. BOTÓN DE RUTA REGUEROS ZONA ---
-          dfregueros= RegerosSeleccion(df_summary)
-          pdfregueros= generate_regueros_zona(dfregueros, datos_clave)
-          if pdfregueros: st.download_button( 
-                     label="🔽 REGUEROS ZONA PDF", 
-                     data=pdfregueros, 
-                     file_name='resumen_regueroszona.pdf', 
-                     mime='application/pdf', 
-                     help='Descarga el resumen del regueros zona en PDF.' 
-                     )
-    
+      
 # ----------------------------------------------------------------------
 
 #Esta función es para guardar datos y no se pierda en los otros procesos
