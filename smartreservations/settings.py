@@ -94,7 +94,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'smartreservations.middleware.SimpleCORSMiddleware',
+    # 'smartreservations.middleware.SimpleCORSMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'smartreservations.middleware.UserActivityLoggingMiddleware',
