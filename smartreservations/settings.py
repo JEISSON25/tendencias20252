@@ -27,10 +27,7 @@ SECRET_KEY = 'django-insecure-h_cel8*k$xxn-p=4=h))qhycag$69wrx(l%=17(3@1soqgi#vy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'https://smart-reservations.azurewebsites.net',
-    'http://localhost',
-]
+ALLOWED_HOSTS = ['*']
 
 AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
 
