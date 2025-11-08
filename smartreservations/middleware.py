@@ -1,43 +1,4 @@
-from django.http import HttpResponse
 from typing import Optional
-
-ALLOWED_ORIGINS = {
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-}
-
-
-class SimpleCORSMiddleware:
-    """
-    Lightweight CORS support for local development without extra dependencies.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        origin = request.headers.get('Origin')
-        is_allowed_origin = origin in ALLOWED_ORIGINS
-
-        if request.method == 'OPTIONS' and is_allowed_origin:
-            response = HttpResponse(status=204)
-            return self._add_cors_headers(response, origin)
-
-        response = self.get_response(request)
-
-        if is_allowed_origin:
-            response = self._add_cors_headers(response, origin)
-
-        return response
-
-    @staticmethod
-    def _add_cors_headers(response, origin):
-        response['Access-Control-Allow-Origin'] = origin
-        response['Access-Control-Allow-Credentials'] = 'true'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-        response['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
-        return response
-
 
 class UserActivityLoggingMiddleware:
     """

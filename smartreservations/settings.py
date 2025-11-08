@@ -32,11 +32,13 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
+
 AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
 
 if AZURE_HOST:
-    # Azure App Service usa un subdominio .azurewebsites.net
     ALLOWED_HOSTS.append(AZURE_HOST)
+
+CORS_ALLOWED_ORIGINS = ALLOWED_HOSTS
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -55,6 +57,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'users',
     'bookings',
+    "corsheaders",
 ]
 
 REST_FRAMEWORK = {
@@ -91,10 +94,10 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'smartreservations.middleware.SimpleCORSMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'smartreservations.middleware.UserActivityLoggingMiddleware',
