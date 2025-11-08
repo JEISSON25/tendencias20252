@@ -32,19 +32,19 @@ ALLOWED_HOSTS = [
     'http://localhost',
 ]
 
-
 AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
 
 if AZURE_HOST:
     ALLOWED_HOSTS.append(AZURE_HOST)
 
-CORS_ALLOWED_ORIGINS = ALLOWED_HOSTS
+CORS_ALLOWED_ORIGINS = [
+    'https://gentle-beach-0e664550f.3.azurestaticapps.net'
+]
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
