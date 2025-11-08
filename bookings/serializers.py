@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import ServiceType, ServiceInstance, Booking, Discount
 from datetime import datetime
+from drf_spectacular.utils import extend_schema_field
 
 User = get_user_model()
 
@@ -20,6 +21,7 @@ class ServiceInstanceSerializer(serializers.ModelSerializer):
         fields = ['id', 'service_type', 'service_type_detail', 'name', 'description', 'price_per_hour']
         read_only_fields = ['price_per_hour', 'service_type_detail']
 
+    @extend_schema_field(serializers.CharField)
     def get_price_per_hour(self, obj):
         service_type = obj.service_type
         if service_type and service_type.cost_per_hour is not None:
@@ -41,6 +43,7 @@ class BookingUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'full_name']
 
+    @extend_schema_field(serializers.CharField)
     def get_full_name(self, obj):
         name = obj.get_full_name()
         return name.strip() or ''
@@ -108,6 +111,14 @@ class BookingSummarySerializer(serializers.ModelSerializer):
         model = Booking
         fields = ['id', 'space', 'start_time', 'end_time', 'status', 'customer']
 
+    @extend_schema_field(serializers.CharField)
     def get_customer(self, obj):
         full_name = obj.user.get_full_name()
         return full_name.strip() if full_name else obj.user.username
+
+class AdminDashboardMetricsSerializer(serializers.Serializer):
+    total_bookings = serializers.IntegerField()
+    total_hours = serializers.FloatField()
+    occupancy_rate = serializers.FloatField()
+    upcoming_count = serializers.IntegerField()
+    revenue = serializers.FloatField()

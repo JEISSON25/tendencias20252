@@ -11,11 +11,12 @@ from rest_framework.views import APIView
 
 from bookings.models import Booking, ServiceInstance, GlobalSettings
 from bookings.permissions import IsStaffOrManager
-from bookings.serializers import BookingSummarySerializer
+from bookings.serializers import BookingSummarySerializer, AdminDashboardMetricsSerializer
 
 
 class AdminDashboardMetricsView(APIView):
     permission_classes = [IsAuthenticated, IsStaffOrManager]
+    serializer_class = AdminDashboardMetricsSerializer
 
     def get(self, request):
         now = timezone.now()
@@ -81,7 +82,6 @@ class AdminDashboardMetricsView(APIView):
         start_local = tz.localize(datetime.combine(current_date, start_time_obj))
         end_local = tz.localize(datetime.combine(current_date, end_time_obj))
 
-        # Ensure window respects "today" by not being in the past relative to current time for start.
         now_local = timezone.now().astimezone(tz)
         if current_date == now_local.date() and start_local < now_local:
             start_local = now_local
@@ -105,9 +105,10 @@ class AdminDashboardMetricsView(APIView):
 
 class AdminUpcomingBookingsView(APIView):
     permission_classes = [IsAuthenticated, IsStaffOrManager]
+    serializer_class = BookingSummarySerializer
 
     def get(self, request):
         now = timezone.now()
         upcoming = Booking.objects.filter(start_time__gte=now).order_by('start_time')[:10]
-        serializer = BookingSummarySerializer(upcoming, many=True)
+        serializer = self.serializer_class(upcoming, many=True)
         return Response(serializer.data)
