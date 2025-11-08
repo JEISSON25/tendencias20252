@@ -1,4 +1,7 @@
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 class UserActivityLoggingMiddleware:
     """
@@ -58,7 +61,7 @@ class UserActivityLoggingMiddleware:
                 payload=body_snapshot,
             )
         except Exception as e:
-            print(e)
+            logger.exception(f"UserActivity log failed for user={user}: {e}")
             pass
 
     @staticmethod
