@@ -57,8 +57,8 @@ class UserActivityLoggingMiddleware:
                 query_params=(request.META.get('QUERY_STRING') or '')[:1024],
                 payload=body_snapshot,
             )
-        except Exception:
-            # Activity logging failures must never block the request cycle.
+        except Exception as e:
+            print(e)
             pass
 
     @staticmethod
