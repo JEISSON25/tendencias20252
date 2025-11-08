@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -68,5 +69,11 @@ class UserActivityLoggingMiddleware:
     def _get_ip(request) -> Optional[str]:
         forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
         if forwarded:
-            return forwarded.split(',')[0].strip()
-        return request.META.get('REMOTE_ADDR')
+            ip = forwarded.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', '')
+
+        if ':' in ip:
+            ip = re.sub(r':\d+$', '', ip)
+
+        return ip or None
