@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import routers, permissions
-from apps.usuarios.views import UsuariosViewSet
+from apps.usuarios.views import UsuariosViewSet,initial_view,login_view,home_view
 from apps.roles.views import RolesViewSet
 from apps.reservas.views import ReservasViewSet,export_reservas_to_pdf,export_reservas_to_json
 from apps.recursos.views import RecursosViewSet,export_recursos_to_pdf,export_recursos_to_json
@@ -37,6 +37,10 @@ router.register(r'reservas', ReservasViewSet)
 router.register(r'recursos', RecursosViewSet)
 
 urlpatterns = [
+    path('', initial_view, name='initial'),#Initial 
+    path('login/', login_view, name='login'),# vista template
+    path('home/', home_view, name='home'),# vista template
+
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('export/recursos/pdf',export_recursos_to_pdf,name='export_recursos_to_pdf'),

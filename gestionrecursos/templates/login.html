@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autenticación</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Control de tabs
+    function toggleTab(tab) {
+      const loginTab = document.getElementById("loginTab");
+      const registerTab = document.getElementById("registerTab");
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+
+      if (tab === 'login') {
+        loginTab.classList.add("text-blue-600", "border-blue-600");
+        loginTab.classList.remove("text-gray-500");
+        registerTab.classList.remove("text-blue-600", "border-blue-600");
+        registerTab.classList.add("text-gray-500");
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+      } else {
+        registerTab.classList.add("text-blue-600", "border-blue-600");
+        registerTab.classList.remove("text-gray-500");
+        loginTab.classList.remove("text-blue-600", "border-blue-600");
+        loginTab.classList.add("text-gray-500");
+        registerForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+      }
+    }
+  </script>
+</head>
+<body class="bg-gradient-to-br from-blue-100 via-white to-blue-50 flex items-center justify-center min-h-screen">
+
+  <!-- Loader -->
+  <div id="loader" class="fixed inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+    </svg>
+  </div>
+
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-96 transition-all">
+    <!-- Tabs -->
+    <div class="flex justify-around border-b mb-6">
+      <button id="loginTab" onclick="toggleTab('login')" 
+              class="pb-2 text-blue-600 border-b-2 border-blue-600 font-semibold focus:outline-none w-1/2">
+        Iniciar sesión
+      </button>
+      <button id="registerTab" onclick="toggleTab('register')" 
+              class="pb-2 text-gray-500 border-b-2 border-transparent font-semibold focus:outline-none w-1/2">
+        Registrarse
+      </button>
+    </div>
+
+    <!-- Mensaje de error Django -->
+    {% if error %}
+      <p class="text-red-600 text-sm text-center mb-4">{{ error }}</p>
+    {% endif %}
+
+    <!-- Login -->
+    <form method="POST" id="loginForm" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Usuario:</label>
+        <input type="text" id="username" name="username" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña:</label>
+        <input type="password" id="password" name="password" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+        Iniciar sesión
+      </button>
+    </form>
+
+    <!-- Registro -->
+    <form method="POST" id="registerForm" class="space-y-4 hidden">
+      {% csrf_token %}
+      <div>
+        <label for="new_username" class="block text-sm font-medium text-gray-700 mb-1">Usuario:</label>
+        <input type="text" id="new_username" name="username" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico:</label>
+        <input type="email" id="email" name="email" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="new_password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña:</label>
+        <input type="password" id="new_password" name="password1" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <div>
+        <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña:</label>
+        <input type="password" id="confirm_password" name="password2" required
+               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+      <button type="submit"
+              class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition duration-200">
+        Crear cuenta
+      </button>
+    </form>
+  </div>
+
+</body>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  const loader = document.getElementById('loader');
+  loader.classList.remove('hidden');
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  const response = await fetch('/api/token/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username, password })
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    sessionStorage.setItem('refreshToken', data.refresh);
+    sessionStorage.setItem('accessToken', data.access);
+    loader.classList.add('hidden');
+  } else {
+    loader.classList.add('hidden');
+  }
+});
+</script>
+</html>
