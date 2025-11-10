@@ -5,6 +5,7 @@ from .serializers import ReservasSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
 # Para PDF
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -20,6 +21,10 @@ class ReservasViewSet(viewsets.ModelViewSet):
     filterset_fields = ('__all__')
     search_fields = ('__all__')
     ordering_fields = ('__all__')
+
+
+def reservas_view(request):
+    return render(request, 'reservas.html')
 
 def export_reservas_to_pdf(request):
     buffer = BytesIO()

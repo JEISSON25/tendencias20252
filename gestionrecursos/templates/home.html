@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inicio</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-     {% csrf_token %}
-  <div class="text-center">
-    <h1 class="text-2xl font-bold mb-4">Bienvenido </h1>
-   
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">Panel Principal</h1>
+
+  <div id="authMsg" class="mb-4 text-green-600 font-semibold"></div>
+
+  <div class="grid grid-cols-2 gap-6">
+    <button onclick="goTo('usuarios')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+      👤 Usuarios
+    </button>
+    <button onclick="goTo('roles')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+      🧩 Roles
+    </button>
+    <button onclick="goTo('reservas')" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600">
+      📅 Reservas
+    </button>
+    <button onclick="goTo('recursos')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700">
+      🏢 Recursos
+    </button>
   </div>
+
+  <script>
+    // 🔒 Verificar autenticación
+    const token = sessionStorage.getItem('accessToken');
+
+    if (!token) {
+      window.location.href = '/login/';
+    } else {
+      document.getElementById('authMsg').textContent = '✅ Autenticación verificada.';
+    }
+
+    // 🚀 Función de redirección
+    function goTo(page) {
+      window.location.href = `/${page}/`;
+    }
+  </script>
 </body>
 </html>

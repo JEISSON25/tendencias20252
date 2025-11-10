@@ -5,6 +5,7 @@ from .serializers import RecursosSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
 # Para PDF
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -21,6 +22,8 @@ class RecursosViewSet(viewsets.ModelViewSet):
     search_fields = ('__all__')
     ordering_fields = ('__all__')
 
+def recursos_view(request):
+    return render(request, 'recursos.html')
 
 def export_recursos_to_pdf(request):
     buffer = BytesIO()

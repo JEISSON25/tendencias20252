@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuarios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+
+  <h1 class="text-2xl font-bold mb-4">👤 Lista de Usuarios</h1>
+  <button onclick="window.location.href='/home/'" class="bg-gray-600 text-white px-4 py-2 rounded mb-4">⬅ Volver</button>
+
+  <table class="min-w-full bg-white border rounded-lg shadow">
+    <thead>
+      <tr class="bg-blue-600 text-white">
+        <th class="px-4 py-2">ID</th>
+        <th class="px-4 py-2">Usuario</th>
+        <th class="px-4 py-2">Email</th>
+        <th class="px-4 py-2">Rol</th>
+      </tr>
+    </thead>
+    <tbody id="usuariosBody"></tbody>
+  </table>
+
+  <script>
+    const token = sessionStorage.getItem('accessToken');
+    if (!token) window.location.href = '/login/';
+
+    async function cargarUsuarios() {
+      const response = await fetch('/api/usuarios/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+
+      const tbody = document.getElementById('usuariosBody');
+      data.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border px-4 py-2">${user.id}</td>
+          <td class="border px-4 py-2">${user.username}</td>
+          <td class="border px-4 py-2">${user.email}</td>
+          <td class="border px-4 py-2">${user.rol}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    cargarUsuarios();
+  </script>
+</body>
+</html>
