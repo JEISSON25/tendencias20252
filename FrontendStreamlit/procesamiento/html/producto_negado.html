@@ -13,14 +13,14 @@
         body { 
             font-family: DejaVu Sans, sans-serif; 
             font-size: 8pt; /* tamaño compacto */
-            color: #000000; 
+            color: #333; 
             margin: 0; 
         }
 
         /* ENCABEZADO */
         h2 { 
             text-align: center; 
-            color: #000000; 
+            color: #333; 
             margin-bottom: 8px; 
             border-bottom: 1.5px solid #bbb; 
             padding-bottom: 4px; 
@@ -36,7 +36,7 @@
         }
 
         th, td {
-            border: 0.5px solid #a8a7a7;
+            border: 0.5px solid #777;
             padding: 3px 5px;
             vertical-align: top;
             overflow-wrap: break-word;
@@ -45,7 +45,7 @@
         }
 
         th {
-            background-color: #bbbbbb;
+            background-color: #cacaca;
             color: #000000;
             text-align: center;
             font-weight: bold;
@@ -59,13 +59,11 @@
         .align-left { text-align: left !important; }
 
         /* ANCHOS DE COLUMNA */
-
-        .col-marca { width: 20%; }
-        .col-producto { width: 39%; } 
-        .col-bultos { width: 10%; text-align: center; }
-        .col-cod { width: 10%; }
-        .col-origen { width: 21%; }
-
+         .col-producto { width: 30%; } 
+         .col-negadas { width: 7%; text-align: center; }
+         .col-marca  { width: 14%; }
+         .col-origen { width: 22%; } 
+         .col-ref    { width: 27%; } 
 
         /* PIE DE PÁGINA */
         footer { 
@@ -85,24 +83,25 @@
 </head>
 <body>
 
-    <h2>LISTADO TOTAL DE PRODUCTOS REQUERIDOS</h2>
+    <h2>LISTADO TOTAL DE PRODUCTOS NEGADOS</h2>
+
 
     <table class="data-table">
         <colgroup>
-            <col class="col-marca">
             <col class="col-producto">
-            <col class="col-bultos">
-            <col class="col-cod">
+            <col class="col-negadas">
+            <col class="col-marca">
             <col class="col-origen">
+            <col class="col-ref">
         </colgroup>
 
         <thead>
             <tr>
-                <th>Marca</th>
                 <th>Producto</th>
-                <th>Bultos</th>
-                <th>Cod.</th>
+                <th>Unidades Negadas</th>
+                <th>Marca</th>
                 <th>Origen</th>
+                <th>Referencia</th>
             </tr>
         </thead>
 

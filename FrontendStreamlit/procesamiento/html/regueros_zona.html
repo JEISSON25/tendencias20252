@@ -7,7 +7,7 @@
         /* CONFIGURACIÓN GENERAL */
         @page {
             size: A4;
-            margin: 1.3cm;
+            margin: 1.5cm 1.3cm 2.5cm 1.3cm; /* espacio extra abajo para el pie */
         }
 
         body {
@@ -25,22 +25,21 @@
             padding-bottom: 4px;
         }
 
-        /* SUBTÍTULOS POR GRUPO (CÓDIGO) */
         h3 {
-            background-color: #4a678f;
-            color: white;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
             padding: 5px 8px;
             border-radius: 4px;
-            font-size: 9pt;
-            margin-top: 15px;
+            font-size: 8pt;
+            margin-top: 4px;
         }
 
         /* TABLA PRINCIPAL */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 8pt;
-            margin-top: 8px;
+            font-size: 7pt;
+            margin-top: 3px;
             table-layout: fixed;
         }
 
@@ -49,12 +48,11 @@
             padding: 3px 5px;
             vertical-align: top;
             overflow-wrap: break-word;
-            word-wrap: break-word;
         }
 
         th {
-            background-color: #4a678f;
-            color: #fff;
+            background-color: #c7c7c7;
+            color: #000000;
             text-align: center;
             font-weight: bold;
         }
@@ -62,43 +60,40 @@
         tr:nth-child(even) { background-color: #f9f9f9; }
         tr { page-break-inside: avoid; }
 
-        
-        /* CLASES DE ANCHOS Y ALINEACIONES */
         .col-cod { width: 8%; text-align: center; }
         .col-origen { width: 12%; }
         .col-marca { width: 16%; }
         .col-producto { width: 56%; }
         .col-und { width: 8%; text-align: center; }
-    
-        /* ENCABEZADO REPETIBLE EN CADA PÁGINA */
+
         thead { display: table-header-group; }
         tfoot { display: table-footer-group; }
 
-        /* PIE DE PÁGINA */
-        footer {
+        /* PIE DE PÁGINA SIMULADO */
+        .footer {
             position: fixed;
-            bottom: 8px;
+            bottom: 0;
             left: 0;
             right: 0;
+            height: 2cm;
             text-align: center;
-            font-size: 7.5pt;
-            color: #888;
+            font-size: 8pt;
+            color: #777;
         }
 
-        /* OPCIONAL: si quieres cada código en página nueva */
-        /* h3 { page-break-before: always; } */
     </style>
 </head>
 <body>
 
+    <!-- CONTENIDO PRINCIPAL -->
     <h2>RESUMEN DE REGUEROS POR CÓDIGO</h2>
-
-    <!-- Aquí se inyectan todas las tablas por grupo -->
     {{ report_table_html | safe }}
 
-    <footer>
+    <!-- PIE DE PÁGINA (compatible con xhtml2pdf) -->
+    <div class="footer">
         <p>Reporte generado automáticamente - {{ fecha_actual }}</p>
-    </footer>
+        <p>Página <pdf:pagenumber /> de <pdf:pagecount /></p>
+    </div>
 
 </body>
 </html>

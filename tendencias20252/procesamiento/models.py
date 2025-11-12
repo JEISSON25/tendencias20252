@@ -1,5 +1,13 @@
 from django.db import models
 
+
+class CortesLogistico(models.Model):
+    fecha = models.DateField()
+    nombre = models.TextField(max_length=200, unique=True)
+    def __str__(self):
+        return f"{self.fecha} - {self.nombre}"
+    
+
 class ProductoNegado(models.Model):
     fecha = models.DateField()
     producto = models.CharField(max_length=200) 
@@ -12,7 +20,7 @@ class ProductoNegado(models.Model):
         return f"{self.origen} - {self.marca} ({self.fecha})"
 
 class pickingModel(models.Model): 
-    nombreAsociado = models.CharField(max_length=50) 
+    nombreAsociado = models.CharField(max_length=500) 
     fechaFactura = models.DateField()
     identificacionAsociado = models.CharField(max_length=15) 
     vendedor = models.CharField(max_length=100) 
@@ -26,6 +34,7 @@ class pickingModel(models.Model):
     marca = models.CharField(max_length=50) 
     idOdoo= models.CharField(max_length=250) 
     fecha_procesamiento = models.DateField(auto_now_add=True)
+    nombrecorte = models.ForeignKey(CortesLogistico, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f"{self.origen} - {self.zona} ({self.fechaFactura})" 

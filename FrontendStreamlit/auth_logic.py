@@ -1,48 +1,71 @@
 # auth_logic.py
 import streamlit as st
 import requests
+import json
+from streamlit_browser_storage import LocalStorage
 
-# URL de tus endpoints de autenticación (basado en la estructura que definimos)
+# === CONFIGURACIÓN ===
 DJANGO_API_BASE = "http://127.0.0.1:8000/api/"
-LOGIN_URL = DJANGO_API_BASE + "auth/jwt/create/" 
+LOGIN_URL = DJANGO_API_BASE + "auth/jwt/create/"
 REFRESH_URL = DJANGO_API_BASE + "auth/jwt/refresh/"
-DJANGO_REGISTER_URL = DJANGO_API_BASE + "register/users/"
+REGISTER_URL = DJANGO_API_BASE + "register/users/"
+
+# === ALMACENAMIENTO PERSISTENTE ===
+storage = LocalStorage(key="auth_tokens")
 
 
-# --- GESTIÓN DE LA SESIÓN ---
-
+# ===============================================================
+# 🔹 INICIALIZACIÓN DEL ESTADO DE SESIÓN
+# ===============================================================
 def init_session_state():
-    """Inicializa todas las variables de sesión necesarias."""
-    if 'logged_in' not in st.session_state:
+    """Inicializa o recupera sesión del almacenamiento local."""
+    if 'initialized' in st.session_state:
+        return
+    st.session_state['initialized'] = True
+
+    # 🔹 Recuperar tokens del navegador
+    stored_access = storage.get("access_token")
+    stored_refresh = storage.get("refresh_token")
+    stored_username = storage.get("username")
+    
+    # 💡 AJUSTE: Si hay tokens, ASUME que está logueado temporalmente.
+    if stored_access and stored_refresh:
+        st.session_state['access_token'] = stored_access
+        st.session_state['refresh_token'] = stored_refresh
+        st.session_state['username'] = stored_username
+        st.session_state['logged_in'] = True
+    else:
+        # No hay tokens, inicializa vacío
         st.session_state['logged_in'] = False
         st.session_state['access_token'] = None
         st.session_state['refresh_token'] = None
         st.session_state['username'] = None
+        
+    # Inicialización de banderas auxiliares si no existen
+    if 'show_register' not in st.session_state:
+        st.session_state['show_register'] = False
 
-def logout_user():
-    """Limpia el estado de la sesión para cerrar la sesión."""
-    # (Opcional: puedes añadir aquí la llamada a /jwt/blacklist/ con el refresh token)
-    st.session_state['logged_in'] = False
-    st.session_state['access_token'] = None
-    st.session_state['refresh_token'] = None
-    st.session_state['username'] = None
-    st.rerun()
-
-# --- FORMULARIO Y LÓGICA DE LOGIN ---
-
+# ===============================================================
+# 🔹 LOGIN / LOGOUT
+# ===============================================================
 def login_user(username, password):
-    """Llama a la API de Django para obtener tokens."""
     try:
         response = requests.post(LOGIN_URL, json={"username": username, "password": password})
         
         if response.status_code == 200:
             tokens = response.json()
             
-            # Guardar tokens y estado
+            # Guardar tokens y estado en sesión
             st.session_state['access_token'] = tokens['access']
             st.session_state['refresh_token'] = tokens['refresh']
             st.session_state['username'] = username
             st.session_state['logged_in'] = True
+
+            # 🔹 También guardarlos en LocalStorage (persistente)
+            storage.set("access_token", tokens['access'])
+            storage.set("refresh_token", tokens['refresh'])
+            storage.set("username", username)
+
             st.success(f"Bienvenido, {username}!")
             st.rerun()
             return True
@@ -50,25 +73,126 @@ def login_user(username, password):
             st.error("Credenciales inválidas.")
             return False
     except requests.exceptions.ConnectionError:
-        st.error("Error de conexión. Revisa que tu servidor de Django esté corriendo.")
+        st.error("Error de conexión. Verifica que el backend esté corriendo.")
         return False
 
-# --- FUNCIÓN CENTRAL DE PETICIÓN PROTEGIDA ---
 
+def logout_user():
+    """Cierra sesión limpiando tanto sesión como almacenamiento local."""
+    # Limpia session_state
+    st.session_state['logged_in'] = False
+    st.session_state['access_token'] = None
+    st.session_state['refresh_token'] = None
+    st.session_state['username'] = None
+
+    # Limpia localStorage
+    storage.delete("access_token")
+    storage.delete("refresh_token")
+    storage.delete("username")
+
+    st.rerun()
+
+# ===============================================================
+# 🔹 REFRESH TOKEN
+# ===============================================================
+def refresh_access_token(silent=False):
+    """Usa el refresh token para renovar el access token."""
+    refresh_token = st.session_state.get("refresh_token")
+    if not refresh_token:
+        return False
+
+    try:
+        response = requests.post(
+            REFRESH_URL,
+            json={"refresh": refresh_token},
+            headers={"Content-Type": "application/json"},
+        )
+
+        if response.status_code == 200:
+            tokens = response.json()
+            st.session_state["access_token"] = tokens["access"]
+
+            # Actualizar en navegador
+            storage.set("access_token", tokens["access"])
+
+            if "refresh" in tokens:
+                st.session_state["refresh_token"] = tokens["refresh"]
+                storage.set("refresh_token", tokens["refresh"])
+
+            if not silent:
+                st.toast("🔄 Token renovado automáticamente", icon="✅")
+
+            return True
+        else:
+            if not silent:
+                st.warning("⚠️ Sesión expirada. Por favor, vuelve a iniciar sesión.")
+            logout_user()
+            return False
+
+    except requests.exceptions.RequestException:
+        if not silent:
+            st.error("Error de red durante el refresco del token.")
+        return False
+
+
+# ===============================================================
+# 🔹 UTILIDADES DE AUTENTICACIÓN
+# ===============================================================
 def get_auth_headers():
-    """Retorna los encabezados con el Access Token."""
-    token = st.session_state.get('access_token')
+    """Encabezados con token Bearer."""
+    token = st.session_state.get("access_token")
     if token:
         return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     return {"Content-Type": "application/json"}
 
-def protected_post(url, data):
+
+# ===============================================================
+# 🔹 PETICIONES PROTEGIDAS (con auto-refresh)
+# ===============================================================
+def protected_request_with_retry(method, url, data=None, json=None):
+    """Realiza una petición autenticada y refresca el token si expira."""
     headers = get_auth_headers()
-    return requests.post(url, json=data, headers=headers)
+    kwargs = {"headers": headers}
+    if data is not None:
+        kwargs["data"] = data
+    if json is not None:
+        kwargs["json"] = json
+
+    response = requests.request(method, url, **kwargs)
+
+    if response.status_code == 401:
+        st.warning("⏳ Token expirado. Intentando renovar...")
+        if refresh_access_token(silent=True):
+            headers = get_auth_headers()
+            kwargs["headers"] = headers
+            response = requests.request(method, url, **kwargs)
+        else:
+            logout_user()
+
+    return response
 
 
+def protected_get(url):
+    return protected_request_with_retry("GET", url)
+
+def protected_post(url, data):
+   
+    try:
+        return protected_request_with_retry("POST", url, json=data)
+    except Exception as e:
+        st.error(f"❌ Error al enviar solicitud protegida: {e}")
+        return None
+
+
+def protected_patch(url, data):
+    return protected_request_with_retry("PATCH", url, json=data)
+
+
+# ===============================================================
+# 🔹 FORMULARIOS UI (para login / registro)
+# ===============================================================
 def show_login_form():
-    """Renderiza y maneja el formulario de inicio de sesión."""
+    """Renderiza el formulario de inicio de sesión."""
     st.header("🔐 Iniciar Sesión")
     with st.form("login_form"):
         username = st.text_input("Usuario")
@@ -78,43 +202,42 @@ def show_login_form():
         if submitted:
             with st.spinner("Autenticando..."):
                 login_user(username, password)
-                
-                
+
+
 def register_user(username, email, password, re_password):
-    """Llama a la API de Django para registrar un nuevo usuario."""
+    """Crea un nuevo usuario en Django."""
     data = {
         "username": username,
         "email": email,
         "password": password,
-        "re_password": re_password
+        "re_password": re_password,
     }
     try:
-        response = requests.post(DJANGO_REGISTER_URL, json=data)
-        
+        response = requests.post(REGISTER_URL, json=data)
         if response.status_code == 201:
-            st.success("¡Registro exitoso! Por favor, inicia sesión.")
+            st.success("🎉 Registro exitoso. Ahora puedes iniciar sesión.")
             return True
         else:
             st.error("Error en el registro.")
-            st.json(response.json()) # Mostrar errores de validación de Django
+            st.json(response.json())
             return False
     except requests.exceptions.ConnectionError:
         st.error("Error de conexión con el backend de Django.")
         return False
 
+
 def show_register_form():
     """Renderiza el formulario de registro."""
-    st.header("✨ Crear Nueva Cuenta")
+    st.header("🧾 Crear nueva cuenta")
     with st.form("register_form"):
-        username = st.text_input("Usuario (Registro)")
-        email = st.text_input("Email")
+        username = st.text_input("Usuario")
+        email = st.text_input("Correo electrónico")
         password = st.text_input("Contraseña", type="password")
-        re_password = st.text_input("Repetir Contraseña", type="password")
+        re_password = st.text_input("Repetir contraseña", type="password")
         submitted = st.form_submit_button("Registrarse")
 
         if submitted:
             with st.spinner("Creando cuenta..."):
                 if register_user(username, email, password, re_password):
-                    # Tras el registro exitoso, volver al login
-                    st.session_state['show_register'] = False
+                    st.session_state["show_register"] = False
                     st.rerun()

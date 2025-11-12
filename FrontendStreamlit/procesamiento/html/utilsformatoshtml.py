@@ -13,9 +13,11 @@ JINJA_ENV = Environment(
     loader=FileSystemLoader(CURRENT_DIR),
     autoescape=select_autoescape(['html']) 
 )
+PRODUCTONEGADO_FILE= 'producto_negado.html'
 LISTADO_TEMPLATE_FILE = 'listado_total_table.html'
 BULTOS_MASIVO_FILE = 'bultos_masivo2.html'
 REGUEROS_ZONA_FILE = 'regueros_zona.html'
+LISTADO_TEMPLATE_PICKMASIVO = 'pickingmasivo.html'
 
 
 def render_to_pdf(html_content: str) -> bytes:
@@ -43,31 +45,27 @@ def transformacion_pdf_listado(df_listado: pd.DataFrame, datos_clave: dict = Non
 
     # 1️⃣ Renombrar columnas
     df_reporte = df_listado.rename(columns={
-        'Unidades_pedidas': 'U. Pedidas',
-        'Pacas': 'Pacas',
-        'Unidades_faltantes': 'U. Faltantes',
-        'Origen': 'Origen',
-        'Zona': 'Zona',
+        'marca': 'Marca',
         'producto': 'Producto',
-        'marca': 'Marca'
+        'Pacas': 'Bultos',
+        'codigoZona': 'Cod.',
+        'Origen': 'Origen'
     })
 
     # 2️⃣ Reordenar
-    column_order = ['Marca', 'Producto', 'U. Pedidas', 'Pacas', 'U. Faltantes', 'Origen', 'Zona']
+    column_order = ['Marca', 'Producto', 'Bultos', 'Cod.','Origen']
     df_reporte = df_reporte[column_order]
 
     # 3️⃣ Alinear columnas centradas
-    center_cols = ['U. Pedidas', 'Pacas', 'U. Faltantes', 'Zona']
+    center_cols = ['Cod.','Bultos']
 
     # 4️⃣ Asignar clases personalizadas por columna
-    col_classes = {
+    col_classes = {   
         'Marca': 'col-marca',
         'Producto': 'col-producto',
-        'U. Pedidas': 'col-pedidas align-center',
-        'Pacas': 'col-pacas align-center',
-        'U. Faltantes': 'col-faltantes align-center',
-        'Origen': 'col-origen',
-        'Zona': 'col-zona align-center'
+        'Bultos': 'col-bultos align-center',
+        'codigoZona' : 'col-cod',
+        'Origen': 'col-origen'
     }
 
     # 5️⃣ Convertir manualmente las filas a HTML
@@ -199,10 +197,11 @@ def generate_regueros_zona(df_listado: pd.DataFrame, datos_clave: dict = None) -
                 <thead>
                     <tr>
                         <th>Código</th>
+                        <th>Origen</th>
                         <th>Marca</th>
                         <th>Producto</th>
                         <th>Bultos</th>
-                        <th>Origen</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -216,9 +215,9 @@ def generate_regueros_zona(df_listado: pd.DataFrame, datos_clave: dict = None) -
                     tablas_html += f'<td class="{clase}">{valor}</td>'
                 tablas_html += "</tr>"
 
-            tablas_html += "</tbody></table><br/>"  # Separador entre orígenes
+            tablas_html += "</tbody></table>"  # Separador entre orígenes
 
-        tablas_html += "<div style='margin-bottom: 20px;'></div>"  # Espacio entre zonas
+        tablas_html += "<div style='margin-bottom: 1px;'></div>"  # Espacio entre zonas
 
     # 4️⃣ Renderizar con plantilla Jinja
     template = JINJA_ENV.get_template(REGUEROS_ZONA_FILE)
@@ -231,3 +230,108 @@ def generate_regueros_zona(df_listado: pd.DataFrame, datos_clave: dict = None) -
     return render_to_pdf(final_html)
 
 
+def productonegado_pdf(df_listado: pd.DataFrame, datos_clave: dict = None) -> bytes:
+    """
+    Convierte el DataFrame de Listado Total en un PDF binario con columnas ajustadas visualmente.
+    """
+    
+
+    # 1️⃣ Renombrar columnas
+    df_reporte = df_listado.rename(columns={
+        'producto':'Producto',
+        'cantidad_negada' : 'Cantidad negada',
+        'marca':'Marca',
+        'origen': 'Origen',
+        'referencia': 'Referencia'
+    })
+
+
+    # 2️⃣ Reordenar
+   
+    column_order = ['Producto', 'Cantidad negada', 'Marca', 'Origen', 'Referencia']
+    df_reporte = df_reporte[column_order]
+    
+
+    # 3️⃣ Alinear columnas centradas
+    center_cols = [ 'Producto', 'Cantidad negada', 'Marca','Origen', 'Referencia']
+
+    # 4️⃣ Asignar clases personalizadas por columna
+    col_classes = {
+        'Producto': 'col-producto',
+        'Cantidad negada': 'col-negadas align-center',
+        'Marca': 'col-marca',
+        'Origen': 'col-origen',
+        'Referencia': 'col-ref'
+    }
+
+    # 5️⃣ Convertir manualmente las filas a HTML
+    filas_html = ""
+    for _, row in df_reporte.iterrows():
+        filas_html += "<tr>"
+        for col in df_reporte.columns:
+            valor = row[col]
+            clase = col_classes.get(col, "")
+            filas_html += f'<td class="{clase}">{valor}</td>'
+        filas_html += "</tr>"
+
+    # 6️⃣ Renderizar el HTML final con Jinja
+    template = JINJA_ENV.get_template(PRODUCTONEGADO_FILE)
+    final_html = template.render(
+        report_table_html=filas_html,
+        datos_clave=datos_clave,
+        fecha_actual=pd.Timestamp.now().strftime("%d-%m-%Y %H:%M:%S")
+    )
+
+    return render_to_pdf(final_html)
+
+
+
+def pickingmasivo_pdf_listado(df_listado: pd.DataFrame, datos_clave: dict = None) -> bytes:
+    """
+    Convierte el DataFrame de Listado Total en un PDF binario con columnas ajustadas visualmente.
+    """
+
+    # 1️⃣ Renombrar columnas
+    df_reporte = df_listado.rename(columns={
+        'marca': 'Marca',
+        'producto': 'Producto',
+        'unidades': 'Unidades',
+        'codigoZona': 'Cod.',
+        'Origen': 'Origen'
+    })
+
+    # 2️⃣ Reordenar
+    column_order = ['Marca', 'Producto', 'Unidades', 'Cod.','Origen']
+    df_reporte = df_reporte[column_order]
+
+    # 3️⃣ Alinear columnas centradas
+    center_cols = ['Cod.','Unidades']
+
+    # 4️⃣ Asignar clases personalizadas por columna
+    col_classes = {   
+        'Marca': 'col-marca',
+        'Producto': 'col-producto',
+        'Unidades': 'col-und align-center',
+        'codigoZona' : 'col-cod',
+        'Origen': 'col-origen'
+    }
+
+    # 5️⃣ Convertir manualmente las filas a HTML
+    filas_html = ""
+    for _, row in df_reporte.iterrows():
+        filas_html += "<tr>"
+        for col in df_reporte.columns:
+            valor = row[col]
+            clase = col_classes.get(col, "")
+            filas_html += f'<td class="{clase}">{valor}</td>'
+        filas_html += "</tr>"
+
+    # 6️⃣ Renderizar el HTML final con Jinja
+    template = JINJA_ENV.get_template(LISTADO_TEMPLATE_PICKMASIVO)
+    final_html = template.render(
+        report_table_html=filas_html,
+        datos_clave=datos_clave,
+        fecha_actual=pd.Timestamp.now().strftime("%d-%m-%Y %H:%M:%S")
+    )
+
+    return render_to_pdf(final_html)

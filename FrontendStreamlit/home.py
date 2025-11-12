@@ -13,7 +13,8 @@ from auth_logic import (
     init_session_state, 
     logout_user, 
     show_login_form, 
-    show_register_form
+    show_register_form,
+    storage
 )
 
 # --- 1. CONFIGURACIÓN E INICIALIZACIÓN ---

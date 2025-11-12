@@ -164,6 +164,7 @@ COLUMNAS_FINALES_MAPEO = {
     "origen": "origen",
     "id": "idOdoo",
     "movimientos_de_existencias_descripcion": "descripcionExistencias", 
+    "nombrecorte" : "nombrecorte"
 }
 
 # --------------------------------------------------------------------------
@@ -257,7 +258,7 @@ def pickingPacking(data_or_path) -> pd.DataFrame:
     columnas_modelo_final_orden = [
         "nombreAsociado", "fechaFactura", "identificacionAsociado", "vendedor",
         "cantidad", "producto", "pesoUnitario", "cuidad", 
-        "codigoZona", "zona", "origen", "marca", "idOdoo"
+        "codigoZona", "zona", "origen", "marca", "idOdoo", "nombrecorte" 
     ]
     
     pickzona = pickzona[columnas_modelo_final_orden]

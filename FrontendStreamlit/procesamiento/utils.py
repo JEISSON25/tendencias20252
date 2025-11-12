@@ -1,5 +1,6 @@
 import pandas as pd
-
+from datetime import date, datetime
+import re
 
 MARCA_MAP = {
     "32": "ADORE",
@@ -40,6 +41,22 @@ MARCA_MAP = {
     "34": "TETRACOLOR",
 }
 
+
+def json_serial_default(obj):
+    """
+    Función de ayuda para la serialización JSON.
+    Convierte cualquier objeto date, datetime o Timestamp a formato ISO 8601.
+    """
+    # Maneja objetos de fecha y hora nativos de Python
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    
+    # Maneja objetos Timestamp de Pandas (aunque Pandas debería manejarlos en el to_dict)
+    if isinstance(obj, pd.Timestamp):
+        return obj.isoformat()
+
+    # Si no es fecha, lanza el error predeterminado
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 ############ Código de producto negado - para importación masiva #######################################
 
@@ -108,14 +125,15 @@ def limpiar_y_preparar_detalle(data_or_path) -> pd.DataFrame:
 
     return detalle
 
-# 🟢 Función de Conversión Pandas-Friendly
+
 def convert_dates_to_iso(df):
-    """
-    Convierte todas las columnas de tipo datetime en el DataFrame 
-    a cadenas de texto en formato ISO 8601 ('YYYY-MM-DD').
-    Esto previene el error "Timestamp is not JSON serializable".
-    """
+    """Convierte columnas de fecha de Pandas a formato string ISO 8601."""
+    # ... (El código de esta función permanece igual, ya que solo limpia columnas detectadas) ...
     df_copy = df.copy()
-    for col in df_copy.select_dtypes(include=['datetime64', 'datetime64[ns]']).columns:
+    date_types = ['datetime64', 'datetime64[ns]', 'datetimetz']
+    
+    for col in df_copy.select_dtypes(include=date_types).columns:
+        df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce')
         df_copy[col] = df_copy[col].dt.strftime('%Y-%m-%d')
+        
     return df_copy

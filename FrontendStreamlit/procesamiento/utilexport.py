@@ -13,10 +13,12 @@ def rutaPesodf (df_crudo: pd.DataFrame) -> pd.DataFrame:
         raise TypeError("La función espera un objeto pd.DataFrame como entrada.")
     
     df_limpio = df_crudo.copy()
+    df_limpio = df_limpio.dropna(subset=["Nombre de la empresa a mostrar en la factura"])
     
     df_rutapeso = df_limpio.groupby(
-        by=["cuidad", "codigoZona", "nombreAsociado", "vendedor", "origen", "idOdoo"]
-    )["pesoUnitario"].sum().reset_index()
+        by=["Asociado/Ciudad", "Asociado/Zona", "Nombre de la empresa a mostrar en la factura", 
+            "Vendedor", "Origen", "ID"]
+    )["Peso Total"].sum().reset_index()
     
     return df_rutapeso
 
@@ -89,8 +91,27 @@ def BultosMasivo (df_crudo: pd.DataFrame) -> pd.DataFrame:
     filtro_bultos = pickbultos["paca"] > 0
     pickbultos = pickbultos[filtro_bultos]
     Bultos_pickingmasivo = pickbultos.groupby(
-        ["codigoZona", "marca", "producto"]
-    )[["paca", "origen"]].agg(
+        ["marca", "producto"]
+    )[["paca", "codigoZona","origen"]].agg(
+        Pacas=("paca", "sum"),
+        codigoZona= ("codigoZona", lambda x: ", ".join(x.unique())),
+        Origen=("origen", lambda x: ", ".join(x.unique()))).reset_index()
+    
+    return Bultos_pickingmasivo
+
+def BultosMasivo2 (df_crudo: pd.DataFrame) -> pd.DataFrame:
+     
+    if not isinstance(df_crudo, pd.DataFrame):
+        raise TypeError("La función espera un objeto pd.DataFrame como entrada.")
+    #A todos se les aplica la función de transformación
+    pickzona = df_crudo.copy()
+    pickbultos = transformacionPicking(pickzona)
+
+    filtro_bultos = pickbultos["paca"] > 0
+    pickbultos = pickbultos[filtro_bultos]
+    Bultos_pickingmasivo = pickbultos.groupby(
+        ["codigoZona","marca", "producto"]
+    )[["paca","origen"]].agg(
         Pacas=("paca", "sum"),
         Origen=("origen", lambda x: ", ".join(x.unique()))).reset_index()
     
@@ -109,9 +130,10 @@ def Regerospickingmasivo (df_crudo: pd.DataFrame) -> pd.DataFrame:
     filtro_pickregerosm = pickregerosm["unidades"] > 0
     pickregerosm = pickregerosm[filtro_pickregerosm]
     Regeros_pickingmasivo = pickregerosm.groupby(["marca", "producto"])[
-          ["cantidad", "paca", "unidades", "origen"]
+          ["unidades","codigoZona", "origen"]
     ].agg(
-          Unidades_faltantes=("unidades", "sum"),
+          unidades=("unidades", "sum"),
+          codigoZona= ("codigoZona", lambda x: ", ".join(x.unique())),
           Origen=("origen", lambda x: ", ".join(x.unique()))).reset_index()
     
     return Regeros_pickingmasivo
