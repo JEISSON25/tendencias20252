@@ -29,6 +29,8 @@ INSTALLED_APPS = [
 
     # Apps del proyecto
     'apps.ventas',
+    #'apps.api',   
+    "django_extensions"
 ]
 
 # ------------------- MIDDLEWARE -------------------
@@ -118,9 +120,13 @@ SWAGGER_SETTINGS = {
             "name": "Authorization",
             "in": "header",
             "description": "Formato: Bearer <token>",
+            
         }
     }
 }
+SWAGGER_SETTINGS["USE_SESSION_AUTH"] = False
+SWAGGER_SETTINGS["JSON_EDITOR"] = True
+
 
 # ------------------- EMAILS (para notificaciones automáticas) -------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
