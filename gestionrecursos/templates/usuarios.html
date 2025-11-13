@@ -6,10 +6,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
-
-  <h1 class="text-2xl font-bold mb-4">👤 Lista de Usuarios</h1>
-  <button onclick="window.location.href='/home/'" class="bg-gray-600 text-white px-4 py-2 rounded mb-4">⬅ Volver</button>
-
+  <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold text-blue-600">Usuarios</h1>
+      <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="abrirModal()">
+          Crear
+      </button>
+  </div>
   <table class="min-w-full bg-white border rounded-lg shadow">
     <thead>
       <tr class="bg-blue-600 text-white">
@@ -17,21 +19,47 @@
         <th class="px-4 py-2">Usuario</th>
         <th class="px-4 py-2">Email</th>
         <th class="px-4 py-2">Rol</th>
+        <th class="px-4 py-2 border">Acciones</th>
       </tr>
     </thead>
     <tbody id="usuariosBody"></tbody>
   </table>
 
-  <script>
-    const token = sessionStorage.getItem('accessToken');
-    if (!token) window.location.href = '/login/';
+  <!-- Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="modal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <h2 class="text-xl font-bold mb-4" id="titulo-modal">Nuevo</h2>
+        <form id="form">
+            <input id="Id" type="hidden">
 
+            <input class="w-full mb-3 p-2 border rounded" id="username" placeholder="Username" required type="text">
+            <input class="w-full mb-3 p-2 border rounded" id="email" placeholder="Email" required type="email">
+            <input class="w-full mb-3 p-2 border rounded" id="password" placeholder="Password" required type="password">
+            <select class="w-full mb-3 p-2 border rounded" id="id_rol" required>
+                <option value="">Seleccione un Rol</option>
+                {% for rol in roles %}
+                    <option value="{{ rol.id_rol }}">{{ rol.nombre_rol }}</option>
+                {% endfor %}
+            </select>
+
+            
+            <div class="flex justify-end space-x-2">
+                <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" onclick="cerrarModal()" type="button">
+                    Cancelar
+                </button>
+                <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const API_URL_INV = "/api/usuarios/";
+    const token = sessionStorage.getItem("accessToken");
     async function cargarUsuarios() {
-      const response = await fetch('/api/usuarios/', {
+      const response = await fetch(API_URL_INV+'?ordering=id', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-
       const tbody = document.getElementById('usuariosBody');
       data.forEach(user => {
         const row = document.createElement('tr');
@@ -40,12 +68,112 @@
           <td class="border px-4 py-2">${user.username}</td>
           <td class="border px-4 py-2">${user.email}</td>
           <td class="border px-4 py-2">${user.rol}</td>
+          <td class="px-4 py-2 border">
+              <div class="flex flex-col sm:flex-row gap-2">
+                  <button class="text-blue-500 hover:underline" onclick="abrirModal(${user.id})">Editar</button>
+                  <button class="text-red-500 hover:underline" onclick="eliminar(${user.id})">Eliminar</button>
+              </div>
+          </td>
         `;
         tbody.appendChild(row);
       });
     }
 
     cargarUsuarios();
+
+async function abrirModal(id = null) {
+    document.getElementById('form').reset();
+    document.getElementById('Id').value = '';
+    document.getElementById('titulo-modal').textContent = id !== null ? "Editar" : "Nuevo";
+
+
+    if (id) {
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+        await refreshToken();
+        const token = sessionStorage.getItem("accessToken");
+        await fetch(API_URL_INV + id + '/', {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+
+                document.getElementById('Id').value = data.id;
+                document.getElementById('username').value = data.username;
+                document.getElementById('email').value = data.email;
+                document.getElementById('id_rol').value = data.rol;
+                document.getElementById('password').value = data.password;
+
+                document.getElementById('modal').classList.remove('hidden');
+                loader.classList.add('hidden');
+            });
+    }else{
+       document.getElementById('modal').classList.remove('hidden');
+    }
+}
+
+function cerrarModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
+
+document.getElementById('form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+     const loader = document.getElementById('loader');
+    loader.classList.remove('hidden');
+    await refreshToken();
+    const token = sessionStorage.getItem("accessToken");
+    const id = document.getElementById('Id').value;
+
+    const data = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        rol: Number(document.getElementById('id_rol').value),
+        password: document.getElementById('password').value
+    };
+
+    fetch(API_URL_INV + (id ? `${id}/` : ''), {
+        method: id ? 'PUT' : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${token}`,
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    }).then(res => res.json())
+        .then((res) => {
+            if (res.id) {
+                cerrarModal();
+                loader.classList.add('hidden');
+                window.location.reload();
+            }
+        });
+});
+
+// Eliminar
+async function eliminar(id) {
+    if (confirm("¿Seguro que deseas eliminar este registro?")) {
+         const loader = document.getElementById('loader');
+         loader.classList.remove('hidden');
+        await refreshToken();
+        const token = sessionStorage.getItem("accessToken");
+        fetch(API_URL_INV + id + '/', {
+            method: 'DELETE', headers: {
+                "Authorization": `Bearer ${token}`,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+            .then(() => {
+                loader.classList.add('hidden');
+                window.location.reload()
+            });
+    }
+}
+
+
   </script>
 </body>
 </html>

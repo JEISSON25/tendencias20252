@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
 from rest_framework import routers, permissions
-from apps.usuarios.views import UsuariosViewSet,usuarios_view,initial_view,login_view,home_view,RegisterView
+from .controllers import initial_view,login_view,home_view,dashboard_view,dashboard_metrics,logout_view
+from apps.usuarios.views import UsuariosViewSet,RegisterView, usuarios_view
 from apps.roles.views import RolesViewSet,roles_view
 from apps.reservas.views import ReservasViewSet,export_reservas_to_pdf,export_reservas_to_json,reservas_view
 from apps.recursos.views import RecursosViewSet,export_recursos_to_pdf,export_recursos_to_json,recursos_view
@@ -41,7 +42,9 @@ urlpatterns = [
     # front
     path('', initial_view, name='initial'),
     path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
     path('home/', home_view, name='home'),
+    path('dashboard/', dashboard_view, name='dashboard'),
     path('usuarios/', usuarios_view, name='usuarios'),
     path('roles/', roles_view, name='roles'),
     path('recursos/', recursos_view, name='recursos'),
@@ -49,7 +52,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #apis
     path('api/', include(router.urls)),
-    path('api/register/', RegisterView.as_view(), name='api-register'),  # ← aquí
+    path('api/dashboard/metrics', dashboard_metrics, name='dashboard_metrics'),
+    path('api/register/', RegisterView.as_view(), name='api-register'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api-auth/', include('rest_framework.urls')),

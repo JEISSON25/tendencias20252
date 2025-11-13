@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -47,6 +46,7 @@ INSTALLED_APPS = [
     'apps.roles',
     'apps.recursos',
     'apps.reservas',
+    'apps.logs',
     'rest_framework_simplejwt',
     'django_filters',
 ]
@@ -82,17 +82,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gestionrecursos.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
         'default': {

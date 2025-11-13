@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from .models import Usuarios
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 
 class UsuariosSerializer(serializers.ModelSerializer):
     class Meta:

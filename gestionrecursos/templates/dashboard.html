@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Administración</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+   {% csrf_token %}
+  <div class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">Dashboard Administrativo</h1>
+    </div>
+
+    <div id="status" class="mb-4 text-sm text-gray-500">Cargando métricas...</div>
+
+    <!-- Tarjetas resumen -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-gray-500 text-sm">Recursos disponibles</div>
+        <div id="card-disponibles" class="text-3xl font-semibold mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-gray-500 text-sm">Reservas activas</div>
+        <div id="card-activas" class="text-3xl font-semibold mt-1">-</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-gray-500 text-sm">Usuarios registrados</div>
+        <div id="card-usuarios" class="text-3xl font-semibold mt-1">-</div>
+      </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow p-4  h-[400px]">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold">Disponibles vs. Reservas activas</h2>
+        </div>
+        <canvas id="chartDisponibles"></canvas>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4 h-[400px]">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold">Top recursos más reservados</h2>
+        </div>
+        <canvas id="chartTop"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const token = sessionStorage.getItem('accessToken');
+    async function loadMetrics() {
+      const status = document.getElementById('status');
+      try {
+        const res = await fetch('/api/dashboard/metrics', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) {
+          status.textContent = 'No se pudo cargar (¿autenticación requerida?)';
+          return;
+        }
+        const data = await res.json();
+        status.textContent = 'Actualizado: ' + new Date(data.generado_en).toLocaleString();
+
+        // Tarjetas
+        document.getElementById('card-disponibles').textContent = data.recursos.disponibles;
+        document.getElementById('card-activas').textContent = data.recursos.reservas_activas;
+        document.getElementById('card-usuarios').textContent = data.usuarios.registrados;
+
+        // Chart 1: Disponibles vs Activas
+        const ctx1 = document.getElementById('chartDisponibles').getContext('2d');
+        new Chart(ctx1, {
+          type: 'doughnut',
+          data: {
+            labels: ['Disponibles', 'Reservas activas'],
+            datasets: [{
+              data: [data.recursos.disponibles, data.recursos.reservas_activas],
+              backgroundColor: ['#22c55e', '#f59e0b']
+            }]
+          },
+          options: {
+            plugins: { legend: { position: 'bottom' } },
+            responsive: true,
+            maintainAspectRatio: false,
+          }
+        });
+
+        // Chart 2: Top recursos
+        const ctx2 = document.getElementById('chartTop').getContext('2d');
+        new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: data.top_recursos.labels,
+            datasets: [{
+              label: 'Reservas',
+              data: data.top_recursos.values,
+              backgroundColor: '#3b82f6'
+            }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } },
+            responsive: true,
+            maintainAspectRatio: false,
+          }
+        });
+      } catch (e) {
+        console.error(e);
+        status.textContent = 'Error al cargar métricas';
+      }
+    }
+    setTimeout(loadMetrics, 500);
+  </script>
+</body>
+</html>

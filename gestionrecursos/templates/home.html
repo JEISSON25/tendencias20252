@@ -3,44 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inicio</title>
+  <title>Panel Principal</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
-
-  <h1 class="text-3xl font-bold text-gray-800 mb-6">Panel Principal</h1>
-
-  <div id="authMsg" class="mb-4 text-green-600 font-semibold"></div>
-
-  <div class="grid grid-cols-2 gap-6">
-    <button onclick="goTo('usuarios')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
-      👤 Usuarios
-    </button>
-    <button onclick="goTo('roles')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
-      🧩 Roles
-    </button>
-    <button onclick="goTo('reservas')" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600">
-      📅 Reservas
-    </button>
-    <button onclick="goTo('recursos')" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700">
-      🏢 Recursos
-    </button>
+<body class="bg-gray-100 min-h-screen flex" style="height: 100vh">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow h-screen flex flex-col">
+    <h2 class="text-xl font-bold p-6 border-b">Menú</h2>
+    <nav class="flex-1 p-4 space-y-4">
+      <a href="?module=dashboard" class="block px-4 py-2 rounded hover:bg-gray-200">Dashboard</a>
+      <a href="?module=usuarios" class="block px-4 py-2 rounded hover:bg-blue-200">Usuarios</a>
+      <a href="?module=roles" class="block px-4 py-2 rounded hover:bg-green-200">Roles</a>
+      <a href="?module=reservas" class="block px-4 py-2 rounded hover:bg-yellow-200">Reservas</a>
+      <a href="?module=recursos" class="block px-4 py-2 rounded hover:bg-purple-200">Recursos</a>
+    </nav>
+    <div class="flex flex-col w-full h-[40px] bg-red-500 justify-center items-center text-center">
+       <form action="{% url 'logout' %}" method="POST" onsubmit="return confirm('¿Seguro que deseas cerrar sesión?')">
+        {% csrf_token %}
+        <button type="submit" class="text-white px-4 py-2 rounded w-full hover:bg-red-600">
+          Cerrar sesión
+        </button>
+      </form>
+    </div>
+  </aside>
+  <!-- Main Content -->
+  <main class="flex-1 p-8 overflow-y-scroll">
+    <div id="authMsg" class="mb-4 text-green-600 font-semibold"></div>
+    {% if module == "usuarios" %}
+      {% include "usuarios.html" %}
+    {% elif module == "roles" %}
+      {% include "roles.html" %}
+    {% elif module == "reservas" %}
+      {% include "reservas.html" %}
+    {% elif module == "recursos" %}
+      {% include "recursos.html" %}
+    {% else %}
+      {% include "dashboard.html" %}
+    {% endif %}
+  </main>
+  <div id="loader" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
+      <svg class="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+      </svg>
   </div>
-
   <script>
-    // 🔒 Verificar autenticación
-    const token = sessionStorage.getItem('accessToken');
-
-    if (!token) {
-      window.location.href = '/login/';
-    } else {
-      document.getElementById('authMsg').textContent = '✅ Autenticación verificada.';
+   async function refreshToken() {
+        const refreshToken = sessionStorage.getItem("refreshToken");
+        if (refreshToken) {
+            await fetch('/api/token/refresh/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refresh: refreshToken })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.access) {
+                        sessionStorage.setItem('accessToken', data.access);
+                    } else {
+                        alert('No se pudo obtener un nuevo token');
+                    }
+                })
+                .catch(error => console.error('Error al refrescar el token:', error));
+        }
+    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (const element of cookies) {
+                const cookie = element.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
-    // 🚀 Función de redirección
-    function goTo(page) {
-      window.location.href = `/${page}/`;
-    }
   </script>
 </body>
 </html>
