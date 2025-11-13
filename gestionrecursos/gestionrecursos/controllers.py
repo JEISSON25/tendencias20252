@@ -52,9 +52,14 @@ def login_view(request):
 def home_view(request):
     module = request.GET.get('module', 'dashboard')
     roles = Roles.objects.all()
+    users = Usuarios.objects.all()
+    tipo_recurso = [v for v, _ in Recursos._meta.get_field('estado_recurso').choices]
+
     return render(request, 'home.html', {
         'module': module,
-        'roles':roles
+        'roles': roles,
+        'users': users,
+        'tipo_recurso': tipo_recurso
     })
 
 @login_required(login_url='/login/')

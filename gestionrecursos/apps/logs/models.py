@@ -30,11 +30,6 @@ class Log(models.Model):
         related_name='logs'
     )
 
-    class Meta:
-        ordering = ['-fecha_hora']
-        verbose_name = 'Log'
-        verbose_name_plural = 'Logs'
-
     def __str__(self):
         user = self.usuario.username if self.usuario else 'system'
         return f"[{self.get_status_display()}] {self.get_level_display()} - {user} - {self.fecha_hora:%Y-%m-%d %H:%M:%S}"
