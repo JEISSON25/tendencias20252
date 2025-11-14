@@ -108,6 +108,7 @@
 <script>
 /* LOGIN */
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
   const loader = document.getElementById('loader');
   const errorMsg = document.getElementById('errorMsg');
   const successMsg = document.getElementById('successMsg');
@@ -118,25 +119,28 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
 
-  const response = await fetch('/api/token/', {
+  const response = await fetch('/login/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
     body: JSON.stringify({ username, password })
   });
 
   loader.classList.add('hidden');
-
   if (response.ok) {
-    const data = await response.json();
-    sessionStorage.setItem('accessToken', data.access);
-    sessionStorage.setItem('refreshToken', data.refresh);
-    successMsg.textContent = 'Inicio de sesión exitoso.';
-    successMsg.classList.remove('hidden');
-  } else {
-    const err = await response.json();
-    errorMsg.textContent = err.detail || 'Usuario o contraseña incorrectos.';
-    errorMsg.classList.remove('hidden');
-  }
+      const data = await response.json();
+      localStorage.setItem('accessToken', data.access);
+      localStorage.setItem('refreshToken', data.refresh);
+      successMsg.textContent = 'Inicio de sesión exitoso.';
+      successMsg.classList.remove('hidden');
+      window.location.href = '/home/';
+    } else {
+      const err = await response.json();
+      errorMsg.textContent = err.detail || 'Usuario o contraseña incorrectos.';
+      errorMsg.classList.remove('hidden');
+    }
 });
 
 /* REGISTRO */
@@ -155,7 +159,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
   const response = await fetch('/api/register/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
     body: JSON.stringify({ username, email, password })
   });
 
@@ -172,5 +176,21 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     errorMsg.classList.remove('hidden');
   }
 });
+
+function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (const element of cookies) {
+                const cookie = element.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
 </script>
 </html>

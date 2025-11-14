@@ -9,6 +9,8 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Count
+import json
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Vista inicial
 def initial_view(request):
@@ -27,24 +29,26 @@ def logout_view(request):
 
 # Vista de login con template
 def login_view(request):
-    if request.POST:
-        username = request.POST['username']
-        password = request.POST['password']
-        user = Usuarios.objects.filter(username=username).first()
-        if not user:
-            return render(request, 'login.html', {'error': 'Usuario no encontrado'})
+    if request.method == "POST":
+        data = json.loads(request.body)
+        username = data.get("username")
+        password = data.get("password")
+        if not Usuarios.objects.filter(username=username).exists():
+            return JsonResponse({"detail": "Usuario no encontrado"}, status=404)
 
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            if request.user.rol:
-                if request.user.rol.id_rol == 1:
-                    return redirect('home')
-                return redirect('home')
-            return redirect('home')
-        else:
-            return render(request, 'login.html', {'error': 'Credenciales inválidas'})
-    return render(request, 'login.html')
+        if user is None:
+            return JsonResponse({"detail": "Contraseña incorrecta"}, status=400)
+
+        login(request, user)
+        refresh = RefreshToken.for_user(user)
+        return JsonResponse({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        })
+
+    return render(request, "login.html")
+ 
 
 
 # Vista principal protegida
