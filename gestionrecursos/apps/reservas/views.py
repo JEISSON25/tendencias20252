@@ -35,6 +35,19 @@ class ReservasViewSet(viewsets.ModelViewSet):
                 f"para el recurso '{reserva.id_recurso.nombre_recurso}' "
             )
         )
+        crear_log(
+            usuario=request.user,
+            status="success",
+            level="reservas",
+            message=f"Exportó el listado de reservas a PDF"
+        )
+
+        crear_log(
+            usuario=request.user,
+            status="success",
+            level="reservas",
+            message=f"Exportó el listado de reservas a JSON"
+        )
 
 
     def perform_update(self, serializer):

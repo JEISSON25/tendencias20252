@@ -7,11 +7,34 @@
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
    <div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-bold mb-4">Lista de Recursos</h1>
-    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="abrirModal()">
-          Crear
-      </button>
+  <h1 class="text-2xl font-bold mb-4">Lista de Reservas</h1>
+
+  <div class="flex gap-2">
+    <!-- Botón Crear -->
+    <button
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      onclick="abrirModal()">
+      Crear
+    </button>
+
+    <!-- Botón PDF -->
+    <a
+      href="{% url 'export_reservas_to_pdf' %}"
+      target="_blank"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      Ver PDF
+    </a>
+
+    <!-- Botón JSON -->
+    <a
+      href="{% url 'export_reservas_to_json' %}"
+      target="_blank"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-500">
+      Ver JSON
+    </a>
   </div>
+</div>
+
   <table class="min-w-full bg-white border rounded-lg shadow">
     <thead>
       <tr class="bg-blue-600 text-white">
@@ -34,7 +57,7 @@
         <form id="form">
             <input id="id_usuario" value="{{id_usuario}}" type="hidden">
             <input id="id_reserva" type="hidden">
-            
+
 
 
             <select class="w-full mb-3 p-2 border rounded" id="estado_reserva" required>

@@ -59,11 +59,14 @@ def login_view(request):
 # Vista principal protegida
 @login_required(login_url='/login/')
 def home_view(request):
+    nombre_usuario = request.user.username
     id_usuario = request.user.id
     id_rol = 0
     if request.user.rol:
         id_rol = request.user.rol.id_rol
     module = request.GET.get('module', 'dashboard')
+
+
     crear_log(
         usuario=request.user,
         status="success",
@@ -104,7 +107,8 @@ def home_view(request):
         'ubicacion_recurso': ubicacion_recurso,
         'tipo_recurso': tipo_recurso,
         'logs_page': logs_page,
-        'filters': filters
+        'filters': filters,
+        'nombre_usuario': nombre_usuario,
     })
 
 @login_required(login_url='/login/')
