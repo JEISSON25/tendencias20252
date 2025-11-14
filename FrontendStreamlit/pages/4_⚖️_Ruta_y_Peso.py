@@ -16,6 +16,9 @@ from procesamiento.utilexport import rutaPesodf
 #FUNCIONES DE AUTENTICACIÓN
 from auth_logic import logout_user
 
+st.set_page_config(page_title="Ruta y Peso", layout="wide") 
+st.title("⚖️ Ruta y Peso")
+
 #La libreria streamlit requiere  de la libreria io para generar los formatos de texto
 if not st.session_state.get('logged_in'):
     st.error("🔒 Debe iniciar sesión para acceder a esta página.")

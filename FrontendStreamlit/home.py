@@ -17,11 +17,32 @@ from auth_logic import (
     storage
 )
 
+st.set_page_config(
+    page_title="Gestión Logística",
+    page_icon="📦", 
+    layout="wide"
+)
+
+
+st.markdown("""
+    <style>
+        /* Oculta el icono de Streamlit y el menú de tres puntos */
+        header .st-emotion-cache-1j0n360 {{
+            visibility: hidden;
+        }}
+        /* Oculta el footer "Made with Streamlit" */
+        footer {{
+            visibility: hidden;
+        }}
+    </style>
+""", unsafe_allow_html=True)
+
+
 # --- 1. CONFIGURACIÓN E INICIALIZACIÓN ---
 st.set_page_config(layout="wide")
 init_session_state() # Inicializa las variables de sesión: logged_in, access_token, etc.
 
-st.title("Sistema de Gestión Logística con Django API")
+st.title("Sistema de Gestión Logística Grupo Multy")
 
 # --- 2. FUNCIÓN PARA OCULTAR LA BARRA LATERAL NO AUTENTICADA ---
 def hide_navigation():

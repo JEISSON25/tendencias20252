@@ -20,8 +20,11 @@ urlpatterns = [
     # 4. Rutas de Lógica de Negocio (Tus apps)
     path('api/logistica/', include('apilogistica.urls')), 
     path('api/procesamiento/', include('procesamiento.urls')),
-
-    # 5. Rutas de Documentación
+    
+    # 5. Rutas user
+    path('api/users/', include('users.urls')),
+    
+    # 6. Rutas de Documentación
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),

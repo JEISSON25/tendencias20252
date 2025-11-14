@@ -19,6 +19,9 @@ from procesamiento.html.utilsformatoshtml import transformacion_pdf_listado, gen
 from auth_logic import protected_post, logout_user, DJANGO_API_BASE
 # Constante que usaremos como placeholder en lugar de NaN para la serialización
 
+st.set_page_config(page_title="Picking y Packing", layout="wide") 
+st.title("📦 Picking y Packing")
+
 NAN_PLACEHOLDER = "__NAN_PLACEHOLDER__"
 
 DEFAULT_END_DATE = datetime.now().date()

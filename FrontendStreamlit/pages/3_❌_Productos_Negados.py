@@ -22,6 +22,9 @@ NAN_PLACEHOLDER = "__NAN_PLACEHOLDER__"
 
 API_URL = DJANGO_API_BASE + "procesamiento/upload_producto_negado/"
 
+st.set_page_config(page_title="Productos Negados", layout="wide") 
+st.title("❌ Productos Negados")
+
 if not st.session_state.get('logged_in'):
     st.error("🔒 Debe iniciar sesión para acceder a esta página.")
     st.stop()
@@ -46,7 +49,12 @@ def display_summary_report():
         df_summary = st.session_state['latest_summary']
         
         # 1. Agrupación
-        df_agrupado = df_summary.groupby('marca').size().reset_index(name='cantidad_negada')
+        
+        df_agrupado = df_summary.groupby("marca")[
+         ["cantidad_negada","origen"]].agg(
+               cantidad_negada=("cantidad_negada", "sum"),
+               origen=("origen", "unique")).reset_index()
+      
     
         # 2. Crear el Gráfico Circular con Plotly Express (AHORA DENTRO DEL IF)
         fig = px.pie(
@@ -93,8 +101,22 @@ def main():
         df_original = pd.read_excel(uploaded_file)
         df_para_envio = convert_dates_to_iso(df_original.copy())
         
+     
+        
         # Transformación de datos 
         df_productonegado = limpiar_y_preparar_detalle(df_para_envio.copy())
+        df_productonegado = convert_dates_to_iso(df_productonegado)
+        #Corrección de decimales
+        if 'cantidad_negada' in df_productonegado.columns:
+          
+            df_productonegado['cantidad_negada'] = pd.to_numeric(
+                df_productonegado['cantidad_negada'], errors='coerce'
+            )
+           
+            df_productonegado['cantidad_negada'].fillna(0, inplace=True)
+           
+            df_productonegado['cantidad_negada'] = df_productonegado['cantidad_negada'].round(2)
+            
         df_pn_visualizacion = df_productonegado.groupby(["fecha","marca", "producto"])[
          ["cantidad_negada","origen", "referencia"]].agg(
                cantidad_negada=("cantidad_negada", "sum"),

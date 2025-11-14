@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 # Importa tus funciones de autenticación
 from auth_logic import protected_get, protected_patch, DJANGO_API_BASE, logout_user 
 
+st.set_page_config(page_title="Análisis de Datos", layout="wide") 
+st.title("📈 Análisis de Datos")
+
 # --- CONFIGURACIÓN Y CONSTANTES ---
 
 API_URL = DJANGO_API_BASE + "procesamiento/reporte_datos/"

@@ -3,6 +3,8 @@ import streamlit as st
 import requests
 import json
 from streamlit_browser_storage import LocalStorage
+from requests.exceptions import RequestException
+from datetime import date, datetime
 
 # === CONFIGURACIÓN ===
 DJANGO_API_BASE = "http://127.0.0.1:8000/api/"
@@ -176,13 +178,33 @@ def protected_get(url):
     return protected_request_with_retry("GET", url)
 
 def protected_post(url, data):
-   
-    try:
-        return protected_request_with_retry("POST", url, json=data)
-    except Exception as e:
-        st.error(f"❌ Error al enviar solicitud protegida: {e}")
-        return None
+    """Envía una solicitud POST autenticada, asegurando que las fechas sean serializables."""
+    
+    # ✅ Conversor seguro para fechas y valores no serializables
+    def default_converter(o):
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
+        if pd.isna(o):
+            return None
+        return str(o)
 
+    try:
+        # Serialización robusta
+        json_data = json.dumps(data, default=default_converter)
+
+        # Enviar la solicitud usando tu función con autenticación y reintentos
+        response = protected_request_with_retry("POST", url, data=json_data)
+        return response
+
+    except TypeError as e:
+        st.error(f"⚠️ Error al serializar los datos: {e}")
+        return None
+    except RequestException as e:
+        st.error(f"❌ Error de red al contactar con el servidor: {e}")
+        return None
+    except Exception as e:
+        st.error(f"❌ Error inesperado en protected_post: {e}")
+        return None
 
 def protected_patch(url, data):
     return protected_request_with_retry("PATCH", url, json=data)
