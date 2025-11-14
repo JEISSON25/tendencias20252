@@ -18,6 +18,7 @@
       {% endif %}
       <a href="?module=reservas" class="block px-4 py-2 rounded hover:bg-yellow-200">Reservas</a>
       <a href="?module=recursos" class="block px-4 py-2 rounded hover:bg-purple-200">Recursos</a>
+      <a href="?module=logs" class="block px-4 py-2 rounded hover:bg-indigo-200">Historial</a>
     </nav>
     <div class="flex flex-col w-full h-[40px] bg-red-500 justify-center items-center text-center">
        <form action="{% url 'logout' %}" method="POST" onsubmit="return confirm('¿Seguro que deseas cerrar sesión?')">
@@ -39,6 +40,8 @@
       {% include "reservas.html" %}
     {% elif module == "recursos" %}
       {% include "recursos.html" %}
+    {% elif module == "logs" %}
+      {% include "logs.html" %}
     {% else %}
       {% include "dashboard.html" %}
     {% endif %}

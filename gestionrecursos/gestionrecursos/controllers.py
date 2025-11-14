@@ -1,6 +1,8 @@
 from apps.recursos.models import Recursos
 from apps.reservas.models import Reservas
 from apps.usuarios.models import Usuarios
+from apps.logs.utils import crear_log
+from apps.logs.models import Log
 from apps.roles.models import Roles
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login,logout
@@ -9,6 +11,7 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Count
+from django.core.paginator import Paginator
 import json
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -38,6 +41,12 @@ def login_view(request):
 
         login(request, user)
         refresh = RefreshToken.for_user(user)
+        crear_log(
+            usuario=user,
+            status="success",
+            level="usuarios",
+            message="Inicio de sesión exitoso"
+        )
         return JsonResponse({
             "access": str(refresh.access_token),
             "refresh": str(refresh)
@@ -55,12 +64,34 @@ def home_view(request):
     if request.user.rol:
         id_rol = request.user.rol.id_rol
     module = request.GET.get('module', 'dashboard')
+    crear_log(
+        usuario=request.user,
+        status="success",
+        level="sistema",
+        message=f"Accedió al módulo {module}"
+    )
     roles = Roles.objects.all()
     users = Usuarios.objects.all()
     recursos = Recursos.objects.all()
     estado_recurso = Recursos._meta.get_field('estado_recurso')
     ubicacion_recurso = Recursos._meta.get_field('ubicacion_recurso')
     tipo_recurso = [v for v, _ in Recursos._meta.get_field('estado_recurso').choices]
+  
+    # LOGS
+    logs_page = None
+    filters = {}
+    if module == "logs":
+        status_filter = request.GET.get("status", "")
+        filters['status'] = status_filter
+
+        logs = Log.objects.filter(usuario=request.user).order_by("-fecha_hora")
+
+        if status_filter  :
+            logs = logs.filter(status=status_filter )
+
+        paginator = Paginator(logs, 10)  
+        page_number = request.GET.get("page",1)
+        logs_page = paginator.get_page(page_number)
 
     return render(request, 'home.html', {
         'id_usuario': id_usuario,
@@ -71,7 +102,9 @@ def home_view(request):
         'recursos': recursos,
         'estado_recurso': estado_recurso,
         'ubicacion_recurso': ubicacion_recurso,
-        'tipo_recurso': tipo_recurso
+        'tipo_recurso': tipo_recurso,
+        'logs_page': logs_page,
+        'filters': filters
     })
 
 @login_required(login_url='/login/')

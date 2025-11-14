@@ -1,6 +1,7 @@
 import json
 from rest_framework import viewsets
 from .models import Reservas
+from apps.logs.utils import crear_log
 from .serializers import ReservasSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,6 +22,48 @@ class ReservasViewSet(viewsets.ModelViewSet):
     filterset_fields = ('__all__')
     search_fields = ('__all__')
     ordering_fields = ('__all__')
+
+    def perform_create(self, serializer):
+        reserva = serializer.save()
+
+        crear_log(
+            usuario=self.request.user,
+            status="success",
+            level="reservas",
+            message=(
+                f"Creó una reserva ({reserva.id_reserva}) "
+                f"para el recurso '{reserva.id_recurso.nombre_recurso}' "
+            )
+        )
+
+
+    def perform_update(self, serializer):
+        reserva = serializer.save()
+
+        crear_log(
+            usuario=self.request.user,
+            status="success",
+            level="reservas",
+            message=(
+                f"Actualizó la reserva ({reserva.id_reserva}) "
+                f"del recurso '{reserva.id_recurso.nombre_recurso}' "
+            )
+        )
+ 
+    def perform_destroy(self, instance):
+
+        crear_log(
+            usuario=self.request.user,
+            status="warning",
+            level="reservas",
+            message=(
+                f"Eliminó la reserva ({instance.id_reserva}) "
+                f"del recurso '{instance.id_recurso.nombre_recurso}'"
+            )
+        )
+
+        instance.delete()
+
 
 
 def reservas_view(request):
