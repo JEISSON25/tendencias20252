@@ -6,9 +6,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
-
-  <h1 class="text-2xl font-bold mb-4">Lista de Recursos</h1>
-  <table class="min-w-full bg-white border rounded-lg shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold mb-4">Lista de Recursos</h1>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="abrirModal()">
+          Crear
+      </button>
+  </div>
+    <table class="min-w-full bg-white border rounded-lg shadow">
     <thead>
       <tr class="bg-blue-600 text-white">
         <th class="px-4 py-2">ID</th>
@@ -16,18 +20,75 @@
         <th class="px-4 py-2">Tipo</th>
         <th class="px-4 py-2">Estado</th>
         <th class="px-4 py-2">Descripción</th>
+        <th class="px-4 py-2 border">Acciones</th>
       </tr>
     </thead>
     <tbody id="recursosBody"></tbody>
   </table>
 
-  <script>
+
+  <!-- Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="modal">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+    <h2 class="text-xl font-bold mb-4" id="titulo-modal">Nuevo</h2>
+    <form id="form">
+      <input id="id_recurso" type="hidden">
+      <input class="w-full mb-3 p-2 border rounded" id="nombre_recurso" placeholder="Nombre del recurso" required type="text">
+            
+      <!-- Tipo de recurso -->
+      <select class="w-full mb-3 p-2 border rounded" id="tipo_recurso" required>
+          <option value="">Seleccione un tipo</option>
+          <option value="SALA">Sala de Reuniones</option>
+          <option value="PC">Computador Portátil</option>
+          <option value="PYT">Proyector</option>
+          <option value="TV">Televisor</option>
+          <option value="MON">Monitor para PC</option>
+          <option value="HRRM">Herramienta</option>
+      </select>
+
+
+      <!-- Estado del recurso -->
+      <select class="w-full mb-3 p-2 border rounded" id="estado_recurso" required>
+          <option value="">Seleccione un estado</option>
+          <option value="DISPONIBLE">Disponible para reserva</option>
+          <option value="USO">En uso</option>
+          <option value="MANTENIMIENTO">En Mantenimiento</option>
+      </select>
+
+
+      <!-- Ubicación del recurso -->
+      <select class="w-full mb-3 p-2 border rounded" id="ubicacion_recurso" required>
+          <option value="">Seleccione ubicación</option>
+          <option value="SUR">Bloque Sur</option>
+          <option value="NORTE">Bloque Norte</option>
+          <option value="CENTRO">Bloque Centro</option>
+      </select>
+      <textarea
+        id="descripcion_recurso"
+        class="w-full mb-3 p-2 border rounded"
+        placeholder="Descripción del recurso"
+        required
+      ></textarea>
+
+      <div class="flex justify-end space-x-2">
+        <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400" onclick="cerrarModal()" type="button">
+          Cancelar
+        </button>
+        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+    const API_URL_INV = "/api/recursos/";
     const token = sessionStorage.getItem('accessToken');
     if (!token) window.location.href = '/login/';
 
     async function cargarRecursos() {
       try {
-        const response = await fetch('/api/recursos/', {
+        const response = await fetch(API_URL_INV, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -47,6 +108,12 @@
             <td class="border px-4 py-2">${recurso.tipo_recurso}</td>
             <td class="border px-4 py-2">${recurso.estado_recurso}</td>
             <td class="border px-4 py-2">${recurso.descripcion_recurso}</td>
+            <td class="px-4 py-2 border">
+              <div class="flex flex-col sm:flex-row gap-2">
+                  <button class="text-blue-500 hover:underline" onclick="abrirModal('${recurso.id_recurso}')">Editar</button>
+                  <button class="text-red-500 hover:underline" onclick="eliminar(${recurso.id_recurso})">Eliminar</button>
+              </div>
+            </td>
           `;
           tbody.appendChild(row);
         });
@@ -57,6 +124,102 @@
     }
 
     cargarRecursos();
-  </script>
+
+
+async function abrirModal(id = null) {
+    document.getElementById('form').reset();
+    document.getElementById('id_recurso').value = '';
+    document.getElementById('titulo-modal').textContent = id !== null ? "Editar" : "Nuevo";
+
+
+    if (id) {
+        const loader = document.getElementById('loader');
+        loader.classList.remove('hidden');
+        await refreshToken();
+        const token = sessionStorage.getItem("accessToken");
+        await fetch(API_URL_INV + id + '/', {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('id_recurso').value = data.id_recurso ; 
+                document.getElementById('nombre_recurso').value = data.nombre_recurso;
+                document.getElementById('tipo_recurso').value = data.tipo_recurso;
+                document.getElementById('estado_recurso').value = data.estado_recurso;
+                document.getElementById('ubicacion_recurso').value = data.ubicacion_recurso;
+                document.getElementById('descripcion_recurso').value = data.descripcion_recurso;
+                document.getElementById('modal').classList.remove('hidden');
+                loader.classList.add('hidden');
+            });
+    }else{
+       document.getElementById('modal').classList.remove('hidden');
+    }
+}
+function cerrarModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
+
+
+document.getElementById('form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+     const loader = document.getElementById('loader');
+    loader.classList.remove('hidden');
+    await refreshToken();
+    const token = sessionStorage.getItem("accessToken");
+    const id = document.getElementById('id_recurso').value;
+
+
+    const data = {
+        nombre_recurso: document.getElementById('nombre_recurso').value,
+        tipo_recurso: document.getElementById('tipo_recurso').value,
+        estado_recurso: document.getElementById('estado_recurso').value,
+        ubicacion_recurso: document.getElementById('ubicacion_recurso').value,
+        descripcion_recurso: document.getElementById('descripcion_recurso').value || ""
+    };
+
+    fetch(API_URL_INV + (id ? `${id}/` : ''), {
+        method: id ? 'PUT' : 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${token}`,
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    }).then(res => res.json())
+        .then((res) => {
+            if (res.id_recurso) {
+                cerrarModal();
+                loader.classList.add('hidden');
+                window.location.reload();
+            }
+        });
+});
+
+// Eliminar
+async function eliminar(id) {
+    if (confirm("¿Seguro que deseas eliminar este registro?")) {
+         const loader = document.getElementById('loader');
+         loader.classList.remove('hidden');
+        await refreshToken();
+        const token = sessionStorage.getItem("accessToken");
+        fetch(API_URL_INV + id + '/', {
+            method: 'DELETE', headers: {
+                "Authorization": `Bearer ${token}`,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+            .then(() => {
+                loader.classList.add('hidden');
+                window.location.reload()
+            });
+    }
+}
+
+</script>
+
 </body>
 </html>

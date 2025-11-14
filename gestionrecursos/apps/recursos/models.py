@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Recursos(models.Model):
-    id_recurso = models.CharField("ID o Código de Recurso",primary_key=True,max_length=15)
+    id_recurso = models.AutoField("ID o Código de Recurso",primary_key=True)
     nombre_recurso = models.CharField("Nombre del recurso", max_length=50)
     TIPOS_RECURSOS = [
         ("SALA", "Sala de Reuniones"),
