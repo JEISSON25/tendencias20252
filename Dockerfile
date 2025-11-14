@@ -1,25 +1,19 @@
-# Usar Python 3.11 (compatible con psycopg2)
 FROM python:3.11-slim
 
-# Evitar buffer de logs
+# Evita el buffering de python
 ENV PYTHONUNBUFFERED=1
 
-# Crear directorio
 WORKDIR /app
 
-# Copiar requirements
+# Copiar requerimientos
 COPY requirements.txt /app/
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Instalar dependencias
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
-
-# Copiar todo el proyecto
+# Copiar TODO el proyecto
 COPY . /app/
 
-# Exponer puerto
-EXPOSE 8000
+# Entrar al directorio donde está manage.py
+WORKDIR /app/grupo6_Ventas
 
-# Comando para correr Django
-CMD ["gunicorn", "grupo6_Ventas.grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
-
+# Ejecutar gunicorn usando el wsgi correcto
+CMD ["gunicorn", "grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
