@@ -131,8 +131,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   loader.classList.add('hidden');
   if (response.ok) {
       const data = await response.json();
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
+      sessionStorage.setItem('accessToken', data.access);
+      sessionStorage.setItem('refreshToken', data.refresh);
       successMsg.textContent = 'Inicio de sesión exitoso.';
       successMsg.classList.remove('hidden');
       window.location.href = '/home/';
