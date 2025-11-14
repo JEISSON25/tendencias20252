@@ -15,10 +15,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Vista inicial
 def initial_view(request):
     if request.user.is_authenticated:
-        if request.user.rol:
-            if request.user.rol.id_rol == 1:
-                return redirect('home')
-            return redirect('home')
         return redirect('home')
 
     return redirect('login')
