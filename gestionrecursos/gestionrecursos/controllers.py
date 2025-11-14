@@ -55,6 +55,9 @@ def login_view(request):
 @login_required(login_url='/login/')
 def home_view(request):
     id_usuario = request.user.id
+    id_rol = 0
+    if request.user.rol:
+        id_rol = request.user.rol.id_rol
     module = request.GET.get('module', 'dashboard')
     roles = Roles.objects.all()
     users = Usuarios.objects.all()
@@ -65,6 +68,7 @@ def home_view(request):
 
     return render(request, 'home.html', {
         'id_usuario': id_usuario,
+        'id_rol': id_rol,
         'module': module,
         'roles': roles,
         'users': users,

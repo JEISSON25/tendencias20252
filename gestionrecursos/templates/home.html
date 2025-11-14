@@ -12,8 +12,10 @@
     <h2 class="text-xl font-bold p-6 border-b">Menú</h2>
     <nav class="flex-1 p-4 space-y-4">
       <a href="?module=dashboard" class="block px-4 py-2 rounded hover:bg-gray-200">Dashboard</a>
+      {% if id_rol == 1 %}
       <a href="?module=usuarios" class="block px-4 py-2 rounded hover:bg-blue-200">Usuarios</a>
       <a href="?module=roles" class="block px-4 py-2 rounded hover:bg-green-200">Roles</a>
+      {% endif %}
       <a href="?module=reservas" class="block px-4 py-2 rounded hover:bg-yellow-200">Reservas</a>
       <a href="?module=recursos" class="block px-4 py-2 rounded hover:bg-purple-200">Recursos</a>
     </nav>
