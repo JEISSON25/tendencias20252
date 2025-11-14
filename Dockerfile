@@ -21,4 +21,5 @@ COPY . /app/
 EXPOSE 8000
 
 # Comando para correr Django
-CMD ["gunicorn", "grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "grupo6_Ventas.grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
+
