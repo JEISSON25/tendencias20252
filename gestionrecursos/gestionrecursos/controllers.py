@@ -50,15 +50,23 @@ def login_view(request):
 # Vista principal protegida
 @login_required(login_url='/login/')
 def home_view(request):
+    id_usuario = request.user.id
     module = request.GET.get('module', 'dashboard')
     roles = Roles.objects.all()
     users = Usuarios.objects.all()
+    recursos = Recursos.objects.all()
+    estado_recurso = Recursos._meta.get_field('estado_recurso')
+    ubicacion_recurso = Recursos._meta.get_field('ubicacion_recurso')
     tipo_recurso = [v for v, _ in Recursos._meta.get_field('estado_recurso').choices]
 
     return render(request, 'home.html', {
+        'id_usuario': id_usuario,
         'module': module,
         'roles': roles,
         'users': users,
+        'recursos': recursos,
+        'estado_recurso': estado_recurso,
+        'ubicacion_recurso': ubicacion_recurso,
         'tipo_recurso': tipo_recurso
     })
 
