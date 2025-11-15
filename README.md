@@ -15,7 +15,7 @@ GET/POST    /api/clientes/
 GET/PUT/DEL /api/clientes/<id>/
 
 ## Front
-https://front-tendencias20252.vercel.app/
+https://front-tendencias20252.vercel.app/ ,
 https://github.com/YojhanxA/FrontTendencias20252.git
 
 ## Back despliegue:
