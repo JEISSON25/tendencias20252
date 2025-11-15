@@ -38,10 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drf_spectacular',
+    'import_export',
     'apilogistica',
     'procesamiento',
+    'users',
     'rest_framework',
-     'django_filters'
+    'djoser',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -126,11 +131,27 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+DJOSER = {
+    # 'djoser.urls.jwt' expone /auth/jwt/create, /auth/jwt/refresh
+    'TOKEN_MODEL': None, 
+
+    # Opciones de Serializers
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.CustomUserCreateSerializer', 
+        'user': 'users.serializers.CustomUserSerializer', 
+    }
 }
 
 # multyproject/settings.py
