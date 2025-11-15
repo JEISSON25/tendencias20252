@@ -10,5 +10,5 @@ COPY . /app/
 
 WORKDIR /app/grupo6_Ventas
 
-# Ejecutamos todo desde el entrypoint
-CMD ["sh", "entrypoint.sh"]
+
+CMD ["sh", "../entrypoint.sh"]
