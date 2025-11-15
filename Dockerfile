@@ -15,5 +15,5 @@ COPY . /app/
 # Entrar al directorio donde está manage.py
 WORKDIR /app/grupo6_Ventas
 
-# Ejecutar gunicorn usando el wsgi correcto
-CMD ["gunicorn", "grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Ejecutar migraciones y luego gunicorn
+CMD ["bash", "-c", "python manage.py migrate --noinput && gunicorn grupo6_Ventas.wsgi:application --bind 0.0.0.0:8000"]
