@@ -91,13 +91,12 @@
 
   <script>
     const API_URL_INV = "/api/reservas/";
-    const token = sessionStorage.getItem('accessToken');
-    if (!token) window.location.href = '/login/';
-
+ 
     async function cargarReservas() {
       try {
-        const id_usuario = document.getElementById('id_usuario').value;
-          const id_rol = Number(document.getElementById('id_rol').value);
+           const token = sessionStorage.getItem('accessToken');
+           const id_usuario = document.getElementById('id_usuario').value;
+          const id_rol = Number(document.getElementById('id_roluser').value);
           let url = API_URL_INV
           if(id_rol !== 1){
               url = API_URL_INV+'?id_user='+id_usuario;
@@ -124,9 +123,8 @@
             <td class="border px-4 py-2">${reserva.id_reserva}</td>
             <td class="border px-4 py-2">${reserva.estado_reserva}</td>
             <td class="border px-4 py-2">${reserva.usuario?.nombre || ""}</td>
-            <td class="border px-4 py-2">${reserva.recurso?.nombre ||""}</td>
-            <td class="border px-4 py-2">${reserva.fecha_inicio}</td>
-            <td class="border px-4 py-2">${reserva.fecha_fin}</td>
+            <td class="border px-4 py-2">${convertirDate(reserva.fecha_inicio)}</td>
+            <td class="border px-4 py-2">${convertirDate(reserva.fecha_fin)}</td>
             <td class="px-4 py-2 border">
               <div class="flex flex-col sm:flex-row gap-2">
                   <button class="text-blue-500 hover:underline" onclick="abrirModal('${reserva.id_reserva}')">Editar</button>
@@ -141,6 +139,14 @@
         alert('No se pudieron cargar las reservas.');
       }
     }
+    function convertirAInputDatetime(fechaISO) {
+        const date = new Date(fechaISO);
+        return date.toISOString().slice(0, 16);
+    }
+    function convertirDate(fechaISO) {
+        const date = new Date(fechaISO);
+        return date.toISOString().slice(0,16).replace("T"," ");
+    }
 
     cargarReservas();
 
@@ -162,11 +168,12 @@
                 'X-CSRFToken': getCookie('csrftoken')
             }
         })
+        
             .then(res => res.json())
             .then(data => {
                 document.getElementById('estado_reserva').value = data.estado_reserva ; 
-                document.getElementById('fecha_inicio').value = data.fecha_inicio;
-                document.getElementById('fecha_fin').value = data.fecha_fin;
+                document.getElementById('fecha_inicio').value = convertirAInputDatetime(data.fecha_inicio);
+                document.getElementById('fecha_fin').value = convertirAInputDatetime(data.fecha_fin);
                 document.getElementById('id_recurso').value = data.id_recurso;
                 document.getElementById('id_reserva').value = data.id_reserva;
                 document.getElementById('modal').classList.remove('hidden');

@@ -35,20 +35,6 @@ class ReservasViewSet(viewsets.ModelViewSet):
                 f"para el recurso '{reserva.id_recurso.nombre_recurso}' "
             )
         )
-        crear_log(
-            usuario=request.user,
-            status="success",
-            level="reservas",
-            message=f"Exportó el listado de reservas a PDF"
-        )
-
-        crear_log(
-            usuario=request.user,
-            status="success",
-            level="reservas",
-            message=f"Exportó el listado de reservas a JSON"
-        )
-
 
     def perform_update(self, serializer):
         reserva = serializer.save()
@@ -77,12 +63,16 @@ class ReservasViewSet(viewsets.ModelViewSet):
 
         instance.delete()
 
-
-
 def reservas_view(request):
     return render(request, 'reservas.html')
 
 def export_reservas_to_pdf(request):
+    crear_log(
+            usuario=request.user,
+            status="success",
+            level="reservas",
+            message=f"Exportó el listado de reservas a PDF"
+        )
     buffer = BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
@@ -100,10 +90,11 @@ def export_reservas_to_pdf(request):
     y = 710
 
     for reserva in reservas:
+        
         p.drawString(30, y, reserva.id_reserva.__str__())
         p.drawString(100, y, reserva.id_user.username)
         p.drawString(220, y, reserva.id_user.rol.nombre_rol)
-        p.drawString(300, y, reserva.id_recurso.tipo_recurso) 
+        p.drawString(300, y, getattr(reserva.id_recurso, "tipo_recurso", None) or "N/A") 
         y -= 20
 
         if y < 100:
@@ -118,6 +109,12 @@ def export_reservas_to_pdf(request):
 
 
 def export_reservas_to_json(request):
+    crear_log(
+            usuario=request.user,
+            status="success",
+            level="reservas",
+            message=f"Exportó el listado de reservas a JSON"
+        )
     reservas = Reservas.objects.all()
     data = []  
 
@@ -126,7 +123,7 @@ def export_reservas_to_json(request):
             'id_reserva': reserva.id_reserva,
             'estado_reserva': reserva.estado_reserva,
             'id_user': reserva.id_user.username,
-            'tipo_recurso': reserva.id_recurso.tipo_recurso,
+            'tipo_recurso': getattr(reserva.id_recurso, "tipo_recurso", None) or "N/A",
             'fecha_inicio': reserva.fecha_inicio.isoformat(),
             'fecha_fin': reserva.fecha_fin.isoformat(),
         })

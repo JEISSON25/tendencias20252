@@ -20,10 +20,9 @@
   </table>
 
   <script>
-    const token = sessionStorage.getItem('accessToken');
-    if (!token) window.location.href = '/login/';
-
+  
     async function cargarRoles() {
+      const token = sessionStorage.getItem('accessToken');
       const response = await fetch('/api/roles/', {
         headers: { 'Authorization': `Bearer ${token}` }
       });

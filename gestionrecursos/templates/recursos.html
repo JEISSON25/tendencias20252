@@ -83,11 +83,10 @@
 
 <script>
     const API_URL_INV = "/api/recursos/";
-    const token = sessionStorage.getItem('accessToken');
-    if (!token) window.location.href = '/login/';
-
+  
     async function cargarRecursos() {
       try {
+          const token = sessionStorage.getItem('accessToken');
         const response = await fetch(API_URL_INV, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
