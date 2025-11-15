@@ -15,5 +15,12 @@ COPY . /app/
 # Entrar al directorio donde está manage.py
 WORKDIR /app/grupo6_Ventas
 
-# Ejecutar migraciones y luego gunicorn
-CMD ["bash", "-c", "python manage.py migrate --noinput && gunicorn grupo6_Ventas.wsgi:application --bind 0.0.0.0:8000"]
+# Crear superusuario automáticamente (solo si no existe)
+RUN echo "from django.contrib.auth import get_user_model; \
+User = get_user_model(); \
+User.objects.filter(username='yojhan').exists() or \
+User.objects.create_superuser('yojhan','yojhan@example.com','cocoloco321')" \
+| python manage.py shell
+
+# Ejecutar gunicorn usando el wsgi correcto
+CMD ["gunicorn", "grupo6_Ventas.wsgi:application", "--bind", "0.0.0.0:8000"]
