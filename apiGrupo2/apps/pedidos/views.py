@@ -1,5 +1,5 @@
 # Vamos a crear las vistas que recibirán las peticiones HTTP
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Q
@@ -16,7 +16,13 @@ from .permissions import (
 from .pdf import *
 from .json import *
 from django.http import HttpResponse
+from rest_framework.views import APIView
+import logging
 # --- ViewSets para cada modelo ---
+from django.http import JsonResponse
+from django.conf import settings
+import os
+from datetime import datetime
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
@@ -67,7 +73,20 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
+class RegistroUsuarioView(APIView):
+    permission_classes = [permissions.AllowAny]
 
+    def post(self, request):
+        serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            user = Usuario.objects.create_user(
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data.get('email', ''),
+                password=serializer.validated_data['password'],  # contraseña del usuario
+                role='CLIENTE',  # rol por defecto
+            )
+            return Response({'message': 'Usuario creado exitosamente'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class ProductoViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestión de productos con permisos basados en roles.
@@ -386,3 +405,93 @@ class NotificacionViewSet(viewsets.ModelViewSet):
         """
         # Aquí implementarías la lógica para enviar notificaciones masivas
         return Response({'mensaje': 'Funcionalidad de notificación masiva pendiente de implementación'})
+    
+
+
+
+logger = logging.getLogger(__name__)
+
+# Endpoint para pruebas de carga
+class LoadTestView(APIView):
+    """
+    Endpoint específico para pruebas de carga con JMeter.
+    Simula diferentes cargas de trabajo para testing.
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request):
+        """Endpoint simple para pruebas de GET con diferentes parámetros"""
+        import time
+        import random
+        
+        # Simular diferentes tiempos de respuesta según parámetro
+        delay = request.GET.get('delay', 0)
+        if delay:
+            time.sleep(float(delay))
+        
+        # Generar datos de prueba
+        data = {
+            'timestamp': datetime.now().isoformat(),
+            'server_status': 'OK',
+            'load_test': True,
+            'response_id': random.randint(1000, 9999),
+            'usuarios_total': Usuario.objects.count(),
+            'productos_total': Producto.objects.count(),
+            'pedidos_total': Pedido.objects.count(),
+            'delay_aplicado': delay
+        }
+        
+        return Response(data, status=200)
+    
+    def post(self, request):
+        """Endpoint para pruebas de POST con validación de datos"""
+        data = request.data
+        
+        # Validar estructura básica
+        required_fields = ['test_name', 'user_count']
+        for field in required_fields:
+            if field not in data:
+                return Response({
+                    'error': f'Campo {field} es requerido',
+                    'status': 'failed'
+                }, status=400)
+        
+        # Simular procesamiento
+        response_data = {
+            'test_name': data['test_name'],
+            'user_count': data['user_count'],
+            'timestamp': datetime.now().isoformat(),
+            'status': 'processed',
+            'message': 'Prueba de carga procesada exitosamente'
+        }
+        
+        return Response(response_data, status=201)
+
+class PedidoViewSet(viewsets.ModelViewSet):
+    queryset = Pedido.objects.all()
+    serializer_class = PedidoSerializer
+
+    def perform_create(self, serializer):
+        pedido = serializer.save()
+        logger.info(f"Pedido creado: {pedido.id} por {self.request.user.username}")
+        return pedido
+
+
+def get_logs(request):
+    """Devuelve las últimas 100 líneas del log como JSON para mostrar en el frontend."""
+    log_dir = getattr(settings, "LOG_DIR", os.path.join(settings.BASE_DIR, "logs"))
+    log_file = os.path.join(log_dir, f'django_{datetime.now().strftime("%Y-%m-%d")}.log')
+
+    if not os.path.exists(log_file):
+        return JsonResponse({"error": "No se encontró el archivo de log"}, status=404)
+
+    try:
+        with open(log_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()[-100:]  # últimas 100 líneas
+    except UnicodeDecodeError:
+        # Si hay caracteres no UTF-8
+        with open(log_file, "r", encoding="latin-1") as f:
+            lines = f.readlines()[-100:]
+
+    logs = [line.strip() for line in lines]
+    return JsonResponse({"logs": logs}, json_dumps_params={"ensure_ascii": False})

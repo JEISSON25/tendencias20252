@@ -8,7 +8,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         # Exponemos solo estos campos (role lo definimos dentro de models.py los demas vienen por defecto con AbstractUser)
-        fields = ['id', 'username', 'email', 'role']
+        fields = ['id', 'username', 'email', 'role', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +22,17 @@ class PedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pedido
         fields = '__all__'
+        
+    def get_entrega(self, obj):
+        entrega = getattr(obj, 'entrega', None)
+        if entrega:
+            return {
+                "id": entrega.id,
+                "estado": entrega.estado,
+                "repartidor": entrega.repartidor.username,
+                "fecha_asignacion": entrega.fecha_asignacion,
+            }
+        return None
 
 class DetallePedidoSerializer(serializers.ModelSerializer):
     class Meta:
