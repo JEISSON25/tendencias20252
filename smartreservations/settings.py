@@ -27,22 +27,21 @@ SECRET_KEY = 'django-insecure-h_cel8*k$xxn-p=4=h))qhycag$69wrx(l%=17(3@1soqgi#vy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'smart-reservations.azurewebsites.net',
-    'localhost',
-]
+ALLOWED_HOSTS = ['*']
 
 AZURE_HOST = os.environ.get('WEBSITE_HOSTNAME')
 
 if AZURE_HOST:
-    # Azure App Service usa un subdominio .azurewebsites.net
     ALLOWED_HOSTS.append(AZURE_HOST)
+
+CORS_ALLOWED_ORIGINS = [
+    'https://gentle-beach-0e664550f.3.azurestaticapps.net'
+]
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -55,6 +54,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'users',
     'bookings',
+    "corsheaders",
 ]
 
 REST_FRAMEWORK = {
@@ -65,6 +65,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'smartreservations.pagination.StandardResultsSetPagination',
+    'PAGE_SIZE': 10,
 }
 
 SIMPLE_JWT = {
@@ -89,11 +91,13 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'smartreservations.middleware.UserActivityLoggingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -155,7 +159,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

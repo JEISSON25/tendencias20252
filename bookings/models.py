@@ -42,6 +42,16 @@ class Discount(models.Model):
         return f'{self.description} ({self.discount_percentage}%)'
 
 class Booking(models.Model):
+    STATUS_ACTIVE = 'ACTIVE'
+    STATUS_CANCELED = 'CANCELED'
+    STATUS_COMPLETED = 'COMPLETED'
+
+    STATUS_CHOICES = [
+        (STATUS_ACTIVE, 'Activa'),
+        (STATUS_CANCELED, 'Cancelada'),
+        (STATUS_COMPLETED, 'Completada'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     service_instance = models.ForeignKey(ServiceInstance, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
@@ -51,6 +61,7 @@ class Booking(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     final_cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
 
     class Meta:
         ordering = ['start_time']
@@ -78,6 +89,11 @@ class Booking(models.Model):
         self.final_cost = (self.cost - self.discount).quantize(Decimal('0.01'))
 
         super().save(*args, **kwargs)
+
+    def mark_completed_if_past(self, reference_time):
+        if self.status == self.STATUS_ACTIVE and self.end_time <= reference_time:
+            self.status = self.STATUS_COMPLETED
+            self.save(update_fields=['status'])
 
     def __str__(self):
         return f'Reserva de {self.service_instance.name} por {self.user.username}'

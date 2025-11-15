@@ -1,6 +1,6 @@
 import pytz
 from rest_framework import viewsets, status
-from bookings.models import ServiceInstance
+from bookings.models import Booking, ServiceInstance
 from bookings.serializers import ServiceInstanceSerializer
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes, OpenApiResponse
@@ -23,7 +23,7 @@ class ServiceInstanceViewSet(CustomPermissionMixin, viewsets.ModelViewSet):
         'update': STAFF_PERMISSIONS,
         'partial_update': STAFF_PERMISSIONS,
         'destroy': STAFF_PERMISSIONS,
-        'available_slots': AUTH_PERMISSIONS,
+        'availability': AUTH_PERMISSIONS,
     }
         
     queryset = ServiceInstance.objects.all()
@@ -36,11 +36,24 @@ class ServiceInstanceViewSet(CustomPermissionMixin, viewsets.ModelViewSet):
             OpenApiParameter(name='date', type=OpenApiTypes.DATE, required=True, 
                              description='Formato YYYY-MM-DD, para la fecha a consultar.'),
         ],
-        responses={200: OpenApiResponse(response={'type': 'array', 'items': {'type': 'string'}}, 
-                                        description='Lista de horas de inicio disponibles (ISO 8601).')}
+        responses={
+            200: OpenApiResponse(
+                response={
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'start': {'type': 'string', 'format': 'date-time'},
+                            'end': {'type': 'string', 'format': 'date-time'},
+                        },
+                    },
+                },
+                description='Lista de franjas disponibles con hora de inicio y fin (ISO 8601).'
+            )
+        }
     )
-    @action(detail=True, methods=['get'], url_path='available-slots')
-    def available_slots(self, request, pk=None):
+    @action(detail=True, methods=['get'], url_path='availability')
+    def availability(self, request, pk=None):
         instance = self.get_object()
         date_str = request.query_params.get('date')
 
@@ -56,8 +69,13 @@ class ServiceInstanceViewSet(CustomPermissionMixin, viewsets.ModelViewSet):
 
         slots = self._get_available_slots(instance, target_date)
         
-        # Devolver solo las horas de inicio en formato ISO para el frontend
-        return Response([s['start_time'].isoformat() for s in slots])
+        # Devolver inicio y fin en formato ISO para el frontend
+        return Response([
+            {
+                'start': s['start_time'].isoformat(),
+                'end': s['end_time'].isoformat(),
+            } for s in slots
+        ])
 
     def _get_available_slots(self, instance, target_date):
         """Calcula las franjas horarias disponibles para una instancia en una fecha,
@@ -108,7 +126,8 @@ class ServiceInstanceViewSet(CustomPermissionMixin, viewsets.ModelViewSet):
         # 4. Obtener las reservas existentes (usando límites UTC)
         booked_intervals = list(instance.booking_set.filter(
             start_time__lt=end_datetime_utc,
-            end_time__gt=start_datetime_utc
+            end_time__gt=start_datetime_utc,
+            status=Booking.STATUS_ACTIVE
         ).order_by('start_time').values('start_time', 'end_time')) 
 
         # 5. Calcular las franjas disponibles, trabajando en la zona horaria LOCAL del SISTEMA
