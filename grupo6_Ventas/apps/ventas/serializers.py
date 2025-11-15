@@ -6,10 +6,7 @@ class ProductosSerializer(serializers.ModelSerializer):
         model = Productos
         fields = '__all__'
 
-class ClienteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cliente
-        fields = '__all__'
+
 
 class DetalleVentaSerializer(serializers.ModelSerializer):
     producto_nombre = serializers.ReadOnlyField(source="producto.nombre")
