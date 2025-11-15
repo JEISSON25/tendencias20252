@@ -1,4 +1,4 @@
 # tendencias20252
 
 ## Documentación en PDF
-![Descargar PDF](./gestionrecursos/Manual.pdf)
+![Descargar Manual de uso](./gestionrecursos/Manual.pdf)
