@@ -39,10 +39,6 @@ class Reservas(models.Model):
     def clean(self):
         if self.fecha_inicio >= self.fecha_fin:
             raise ValidationError("La hora de inicio debe ser anterior a la hora de fin.")
-
-        if self.id_recurso.id_recurso == '1':
-            if   self.id_user.rol.id_rol != 1:
-                raise ValidationError("Solo los administradores pueden reservar la sala de conferencias.")
     
         # Verificar si existe alguna reserva que cruce con las fechas de esta reserva 
         Reservation_crussade = Reservas.objects.filter(
@@ -58,12 +54,12 @@ class Reservas(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-        print(self.id_user.email_usuario)
+        print(self.id_user.email)
         send_mail(
             f'Cambio de estado: {self.estado_reserva}',
             f'Hola {self.id_user.username},\nNotificacion del estado de tu reserva para: {self.id_recurso.tipo_recurso} desde {self.fecha_inicio} hasta {self.fecha_fin}.',
             settings.DEFAULT_FROM_EMAIL,
-            [self.id_user.email_usuario],
+            [self.id_user.email],
             fail_silently=False,
         )
  

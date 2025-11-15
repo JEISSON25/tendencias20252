@@ -1,0 +1,76 @@
+
+<div class="bg-white rounded shadow p-6">
+  <h3 class="text-xl font-semibold mb-4">Historial / Logs</h3>
+
+  <form method="get" class="mb-4 flex gap-2 items-center">
+    <!-- Mantener module en la query -->
+    <input type="hidden" name="module" value="logs">
+
+    <select name="status" class="border rounded px-3 py-1">
+      <option value="">Todos los estados</option>
+      <option value="success" {% if filters.status == 'success' %}selected{% endif %}>Success</option>
+      <option value="error" {% if filters.status == 'error' %}selected{% endif %}>Error</option>
+      <option value="warning" {% if filters.status == 'warning' %}selected{% endif %}>Warning</option>
+    </select>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded">Filtrar</button>
+  </form>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm font-medium">Fecha</th>
+          <th class="px-4 py-2 text-left text-sm font-medium">Nivel</th>
+          <th class="px-4 py-2 text-left text-sm font-medium">Estado</th>
+          <th class="px-4 py-2 text-left text-sm font-medium">Usuario</th>
+          <th class="px-4 py-2 text-left text-sm font-medium">Mensaje</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-100">
+        {% for log in logs_page %}
+          <tr>
+            <td class="px-4 py-2 text-sm">{{ log.fecha_hora|date:"Y-m-d H:i:s" }}</td>
+            <td class="px-4 py-2 text-sm">{{ log.get_level_display }}</td>
+            <td class="px-4 py-2 text-sm">
+              {% if log.status == 'success' %}
+                <span class="text-green-600 font-semibold">{{ log.get_status_display }}</span>
+              {% elif log.status == 'error' %}
+                <span class="text-red-600 font-semibold">{{ log.get_status_display }}</span>
+              {% else %}
+                <span class="text-yellow-600 font-semibold">{{ log.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-2 text-sm">
+              {% if log.usuario %}
+                {{ log.usuario.username }}
+              {% else %}
+                system
+              {% endif %}
+            </td>
+            <td class="px-4 py-2 text-sm break-words">{{ log.message }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500">No hay registros.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <div class="mt-4 flex items-center justify-between">
+    <div>
+      Página {{ logs_page.number }} de {{ logs_page.paginator.num_pages }} — {{ logs_page.paginator.count }} registros
+    </div>
+    <div class="space-x-2">
+      {% if logs_page.has_previous %}
+        <a href="?module=logs&page={{ logs_page.previous_page_number }}{% if filters.level %}&level={{ filters.level }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.q %}&q={{ filters.q }}{% endif %}" class="px-3 py-1 border rounded">Anterior</a>
+      {% endif %}
+      {% if logs_page.has_next %}
+        <a href="?module=logs&page={{ logs_page.next_page_number }}{% if filters.level %}&level={{ filters.level }}{% endif %}{% if filters.status %}&status={{ filters.status }}{% endif %}{% if filters.q %}&q={{ filters.q }}{% endif %}" class="px-3 py-1 border rounded">Siguiente</a>
+      {% endif %}
+    </div>
+  </div>
+</div>

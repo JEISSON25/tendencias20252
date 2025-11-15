@@ -4,6 +4,7 @@ from .serializers import RolesSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
 
 class RolesViewSet(viewsets.ModelViewSet):
     queryset = Roles.objects.all()
@@ -13,3 +14,6 @@ class RolesViewSet(viewsets.ModelViewSet):
     filterset_fields = ('__all__')
     search_fields = ('__all__')
     ordering_fields = ('__all__')
+
+def roles_view(request):
+    return render(request, 'roles.html')

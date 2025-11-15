@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from datetime import timedelta
 import uuid
@@ -27,12 +28,12 @@ SECRET_KEY = 'django-insecure-c)i0h!+_ej8=4gmcl1y6e5m5n72=!1wp6i=dp!orp4xumwe7_&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'apps.usuarios',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,11 +46,13 @@ INSTALLED_APPS = [
     'apps.roles',
     'apps.recursos',
     'apps.reservas',
+    'apps.logs',
     'rest_framework_simplejwt',
     'django_filters',
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -79,17 +82,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gestionrecursos.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
         'default': {
@@ -152,7 +144,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT= os.path.join(BASE_DIR, 'staticfiles')
+
+CSRF_TRUSTED_ORIGINS= [
+    'https://gestionrecursos.fly.dev'
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -4,4 +4,4 @@ from .models import Recursos
 class RecursosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recursos
-        fields = '__all__'
+        fields = "__all__"

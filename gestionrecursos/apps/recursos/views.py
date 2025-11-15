@@ -1,10 +1,12 @@
 import json
 from rest_framework import viewsets
 from .models import Recursos
+from apps.logs.utils import crear_log
 from .serializers import RecursosSerializer
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import render
 # Para PDF
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -21,6 +23,35 @@ class RecursosViewSet(viewsets.ModelViewSet):
     search_fields = ('__all__')
     ordering_fields = ('__all__')
 
+    def perform_create(self, serializer):
+        recurso = serializer.save()
+        crear_log(
+            usuario=self.request.user,
+            status="success",
+            level="recursos",
+            message=f"Creó el recurso: {recurso.nombre_recurso}"
+        )
+
+    def perform_update(self, serializer):
+        recurso = serializer.save()
+        crear_log(
+            usuario=self.request.user,
+            status="success",
+            level="recursos",
+            message=f"Editó el recurso: {recurso.nombre_recurso}"
+        )
+    def perform_destroy(self, instance):
+        crear_log(
+            usuario=self.request.user,
+            status="warning",
+            level="recursos",
+            message=f"Eliminó el recurso: {instance.nombre_recurso}"
+        )
+        instance.delete()
+
+
+def recursos_view(request):
+    return render(request, 'recursos.html')
 
 def export_recursos_to_pdf(request):
     buffer = BytesIO()
