@@ -26,15 +26,7 @@ class ReservasViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         reserva = serializer.save()
 
-        crear_log(
-            usuario=self.request.user,
-            status="success",
-            level="reservas",
-            message=(
-                f"Creó una reserva ({reserva.id_reserva}) "
-                f"para el recurso '{reserva.id_recurso.nombre_recurso}' "
-            )
-        )
+       
 
     def perform_update(self, serializer):
         reserva = serializer.save()
