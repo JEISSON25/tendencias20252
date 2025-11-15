@@ -96,7 +96,13 @@
 
     async function cargarReservas() {
       try {
-        const response = await fetch('/api/reservas/', {
+        const id_usuario = document.getElementById('id_usuario').value;
+          const id_rol = Number(document.getElementById('id_rol').value);
+          let url = API_URL_INV
+          if(id_rol !== 1){
+              url = API_URL_INV+'?id_user='+id_usuario;
+          }
+        const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -107,6 +113,10 @@
         const data = await response.json();
         const tbody = document.getElementById('reservasBody');
         tbody.innerHTML = ''; // limpiar tabla
+
+        if (data.length === 0){
+             return document.getElementById('reservasBody').innerHTML = '<tr><td colspan="6" class="text-center">No hay reservas registradas.</td></tr>';
+         }
 
         data.forEach(reserva => {
           const row = document.createElement('tr');
