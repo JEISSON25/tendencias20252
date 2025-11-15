@@ -3,14 +3,16 @@ Django settings for grupo6_Ventas project.
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 from datetime import timedelta  # Para configurar JWT
 
 # ------------------- BASE -------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-%c%%f-l1s#0e7=*()tu^3&3u*520($%4%3b2fn(^j!dfjohn=9'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-cambiar")
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 # ------------------- APPS -------------------
 INSTALLED_APPS = [
@@ -26,6 +28,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'drf_yasg',
+    'corsheaders',
+    'django_extensions',
 
     # Apps del proyecto
     'apps.ventas',
@@ -34,6 +38,8 @@ INSTALLED_APPS = [
 # ------------------- MIDDLEWARE -------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,10 +70,10 @@ WSGI_APPLICATION = 'grupo6_Ventas.wsgi.application'
 
 # ------------------- DATABASE -------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 # ------------------- PASSWORD VALIDATION -------------------
@@ -85,7 +91,15 @@ USE_I18N = True
 USE_TZ = True
 
 # ------------------- ARCHIVOS ESTÁTICOS -------------------
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    }
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ------------------- DRF CONFIG -------------------
@@ -121,8 +135,19 @@ SWAGGER_SETTINGS = {
         }
     }
 }
+SWAGGER_SETTINGS["USE_SESSION_AUTH"] = False
+SWAGGER_SETTINGS["JSON_EDITOR"] = True
 
-# ------------------- EMAILS (para notificaciones automáticas) -------------------
+# ------------------- EMAILS -------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@ventas.local"
+
+# ------------------- CORS / CSRF -------------------
+CORS_ALLOWED_ORIGINS = [o for o in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if o]
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+CORS_ALLOW_CREDENTIALS = True
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+
 
