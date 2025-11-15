@@ -2,3 +2,6 @@
 
 ## Documentación en PDF
 ![Descargar Manual de uso](./gestionrecursos/Manual.pdf)
+
+## Link de la app desplegada
+https://gestionrecursos.fly.dev
