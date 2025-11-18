@@ -40,8 +40,14 @@ class Producto(TimeStampedModel):
 class Cliente(TimeStampedModel):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="clientes")
     nombre = models.CharField(max_length=150)
+<<<<<<< HEAD
+    telefono = models.CharField(max_length=20)
+    correo =models.EmailField(unique=True)
+   
+=======
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, unique=True)
+>>>>>>> upstream/grupo5
 
     def __str__(self):
         return self.nombre
@@ -49,8 +55,12 @@ class Cliente(TimeStampedModel):
 class Empleado(TimeStampedModel):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="empleados")
     nombre = models.CharField(max_length=150)
+<<<<<<< HEAD
+    telefono = models.CharField(max_length=20, null=True, blank=True) 
+=======
     #correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, unique=True)
+>>>>>>> upstream/grupo5
 
     def __str__(self):
         return self.nombre
@@ -94,6 +104,8 @@ class Movimiento(TimeStampedModel):
 
     def __str__(self):
         return f"Movimiento {self.id} ({self.tipo})"
+<<<<<<< HEAD
+=======
 
 # Signals para automatizaciones
 @receiver(pre_save, sender=DetalleVenta)
@@ -133,3 +145,4 @@ def actualizar_stock_movimiento(sender, instance, created, **kwargs):
             producto.stock -= instance.cantidad
         producto.save()
         print(f"Stock actualizado: {producto.nombre} = {producto.stock}")  # Debug
+>>>>>>> upstream/grupo5

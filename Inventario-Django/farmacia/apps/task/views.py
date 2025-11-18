@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+"""ViewSets gestionamos operaciones CRUD con autenticacion, 
+permisos y generacion de PDFs."""
+=======
 """ViewSets gestionamos operaciones CRUD con autenticaciÃ³n, 
 permisos y generaciÃ³n de PDFs."""
+>>>>>>> upstream/grupo5
 
 from rest_framework import viewsets
 from .models import *
